@@ -69,7 +69,7 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Learner check: Collect the key and drag it around the room. Do targets light up? Drop it on the door, then on the box. Then try click-to-use once.
   Commit: `Drag items from the satchel onto the room`
 
-- [ ] **7. Hints that follow your progress**
+- [x] **7. Hints that follow your progress**
   Becomes usable: A hint button that's always available. Each press reveals the next of three levels for your current step: finding the key, opening the box, or cracking the code. Levels reset when you advance. Wrong-item use gets its in-world line.
   Why now: This completes the "clever but fair" promise on top of a working AI room. It's mostly reducer logic, so it's cheap to verify before visuals.
   PRD ref: `prd.md > Hints`, `prd.md > Inventory and Using Items`
@@ -138,4 +138,5 @@ Activity mode:
 - The game moved from `/` to `/play`; `/` is the landing page. The dev fallback flag is now `/play?fallback`.
 - Drag-and-drop uses a single `DROP_ITEM` reducer action (= hold + use) rather than two dispatches, so it's unit-testable and can't diverge from click-to-use. Targets don't reveal validity while hovering (that would give the puzzle away); every hotspot glows and the one under the item lifts and shows its plaque. A wrong drop wiggles the target. Verified with real mouse input at 1366×768 and real CDP touch events at 390×844.
 - Stopping a backgrounded `npx next dev` can leave its child Next.js process holding the port, and a dev server running across a page move served stale HTML (hydration error). Restarting the server fixed it, with no code change needed.
+- Hints: the step is derived from progress (`currentHintStep`), so levels reset automatically when the player advances; there's no separate reset logic to get wrong. The owl button sits in the sidebar with three level pips, and the sidebar's bottom row wraps when it's narrow (260px at 1000px wide). Verified in Edge: levels 1→2→3, then stays at 3.
 

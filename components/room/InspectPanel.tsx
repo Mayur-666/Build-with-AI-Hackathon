@@ -24,7 +24,10 @@ export function InspectPanel({ message, keyOffered, keyName, keyEmoji, onCollect
     >
       {message ? (
         <>
-          <h2 className="mb-1 text-lg capitalize text-[#6b3a14]">{message.title}</h2>
+          <h2 className="mb-1 text-lg text-[#6b3a14] first-letter:uppercase">
+            {message.tone === "hint" && <span aria-hidden>🦉 </span>}
+            {message.title}
+          </h2>
           {message.lines.map((line, i) => (
             <p key={i} className="mb-1 text-[0.95rem] leading-snug">
               {line}

@@ -4,13 +4,14 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { EscapeScreen } from "@/components/EscapeScreen";
 import { StartScreen } from "@/components/StartScreen";
 import { ClueJournal } from "@/components/room/ClueJournal";
+import { HintButton } from "@/components/room/HintButton";
 import { CodeMachine } from "@/components/room/CodeMachine";
 import { InspectPanel } from "@/components/room/InspectPanel";
 import { Inventory } from "@/components/room/Inventory";
 import { RoomScene } from "@/components/room/RoomScene";
 import { useItemDrag } from "@/components/room/useItemDrag";
 import { buildFallbackRoom } from "@/lib/game/fallbackRoom";
-import { gameReducer, initialGameState } from "@/lib/game/reducer";
+import { gameReducer, initialGameState, revealedHintLevel } from "@/lib/game/reducer";
 import type { GameAction, GameState, HotspotId, Message, Room } from "@/lib/game/types";
 
 type Screen = "start" | "loading" | "room";
@@ -144,7 +145,7 @@ export default function GameShell() {
             onCollect={() => dispatch({ type: "COLLECT_KEY" })}
           />
         </div>
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3">
           <Inventory
             items={game.inventory}
             selected={game.selectedItem}
@@ -152,7 +153,10 @@ export default function GameShell() {
             dragHandlers={handlersFor}
             dragging={drag?.item.id ?? null}
           />
-          <ClueJournal entries={game.journal} />
+          <div className="ml-auto flex items-center gap-2">
+            <HintButton level={revealedHintLevel(game)} onHint={() => dispatch({ type: "REQUEST_HINT" })} />
+            <ClueJournal entries={game.journal} />
+          </div>
         </div>
       </aside>
       {drag && (

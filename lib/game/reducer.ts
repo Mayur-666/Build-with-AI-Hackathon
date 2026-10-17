@@ -1,4 +1,4 @@
-import type { GameAction, GameState, HotspotId, JournalEntry, Message, ObjectId, Room } from "./types";
+import type { GameAction, GameState, HintStep, HotspotId, JournalEntry, Message, ObjectId, Room } from "./types";
 
 export function initialGameState(room: Room): GameState {
   return {
@@ -20,6 +20,18 @@ export function initialGameState(room: Room): GameState {
 }
 
 const isObject = (id: HotspotId): id is ObjectId => id === "a" || id === "b" || id === "c";
+
+/** Which step of the chain the player is on — hints always follow progress. */
+export function currentHintStep(state: GameState): HintStep {
+  if (!state.keyCollected) return "findKey";
+  if (!state.boxOpen) return "openBox";
+  return "solveCode";
+}
+
+/** How many hint levels have been revealed for the current step (0–3). */
+export function revealedHintLevel(state: GameState): number {
+  return state.hintStep === currentHintStep(state) ? state.hintLevel : 0;
+}
 
 function addJournal(journal: JournalEntry[], entry: JournalEntry): JournalEntry[] {
   return journal.some((j) => j.id === entry.id) ? journal : [...journal, entry];
@@ -132,8 +144,16 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "CLOSE_MACHINE":
       return { ...state, machineOpen: false };
 
-    case "REQUEST_HINT":
-      return state; // slice 3
+    case "REQUEST_HINT": {
+      const step = currentHintStep(state);
+      const level = Math.min(revealedHintLevel(state) + 1, 3) as 1 | 2 | 3;
+      return {
+        ...state,
+        hintStep: step,
+        hintLevel: level,
+        message: { title: `A hint (${level} of 3)`, lines: [room.hints[step][level - 1]], tone: "hint" },
+      };
+    }
 
     default:
       return state;

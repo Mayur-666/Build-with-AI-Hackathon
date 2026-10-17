@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FALLBACK_ROOM_TEXT } from "../lib/game/fallbackRoom";
 import { fillRoom } from "../lib/game/fill";
-import { gameReducer, initialGameState } from "../lib/game/reducer";
+import { currentHintStep, gameReducer, initialGameState, revealedHintLevel } from "../lib/game/reducer";
 import { createSolution } from "../lib/game/solution";
 import type { GameAction, GameState } from "../lib/game/types";
 
@@ -110,3 +110,57 @@ describe("gameReducer — the fixed puzzle chain", () => {
     expect(s.inventory).toEqual([]);
   });
 });
+
+describe("gameReducer — hints follow progress", () => {
+  const hint = (s: GameState) => gameReducer(s, { type: "REQUEST_HINT" });
+
+  it("walks levels 1 → 3 for the current step and stays at 3", () => {
+    const start = freshGame();
+    let s = hint(start);
+    expect(s.message?.lines).toEqual([start.room.hints.findKey[0]]);
+    s = hint(s);
+    expect(s.message?.lines).toEqual([start.room.hints.findKey[1]]);
+    s = hint(s);
+    expect(s.message?.lines).toEqual([start.room.hints.findKey[2]]);
+    s = hint(s);
+    expect(s.message?.lines).toEqual([start.room.hints.findKey[2]]);
+    expect(revealedHintLevel(s)).toBe(3);
+  });
+
+  it("starts over at level 1 when the player reaches the next step", () => {
+    const start = freshGame();
+    const { keyHolder } = start.room.solution;
+    let s = play(start, [{ type: "REQUEST_HINT" }, { type: "REQUEST_HINT" }]);
+    s = play(s, [{ type: "INSPECT", target: keyHolder }, { type: "COLLECT_KEY" }]);
+    expect(currentHintStep(s)).toBe("openBox");
+    expect(revealedHintLevel(s)).toBe(0);
+    s = hint(s);
+    expect(s.message?.lines).toEqual([start.room.hints.openBox[0]]);
+    s = play(s, [{ type: "DROP_ITEM", item: "key", target: "box" }]);
+    expect(currentHintStep(s)).toBe("solveCode");
+    s = hint(s);
+    expect(s.message?.lines).toEqual([start.room.hints.solveCode[0]]);
+  });
+
+  it("never reveals the code, even at the last level", () => {
+    for (let i = 0; i < 30; i++) {
+      const start = freshGame();
+      const { keyHolder } = start.room.solution;
+      let s = play(start, [
+        { type: "INSPECT", target: keyHolder },
+        { type: "COLLECT_KEY" },
+        { type: "DROP_ITEM", item: "key", target: "box" },
+      ]);
+      for (let k = 0; k < 3; k++) s = hint(s);
+      expect(s.message?.lines.join(" ")).not.toMatch(/[0-9]/);
+      expect(s.message?.lines.join(" ")).toContain(start.room.objects[start.room.solution.order[0]].name);
+    }
+  });
+
+  it("asking for a hint changes nothing about the puzzle", () => {
+    const start = freshGame();
+    const s = hint(hint(start));
+    expect({ ...s, message: null, hintLevel: 0 }).toEqual({ ...start, message: null, hintLevel: 0 });
+  });
+});
+
