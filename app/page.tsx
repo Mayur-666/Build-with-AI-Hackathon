@@ -10,9 +10,11 @@ import { Inventory } from "@/components/room/Inventory";
 import { RoomScene } from "@/components/room/RoomScene";
 import { buildFallbackRoom } from "@/lib/game/fallbackRoom";
 import { gameReducer, initialGameState } from "@/lib/game/reducer";
-import type { GameAction, GameState, HotspotId, Room } from "@/lib/game/types";
+import type { GameAction, GameState, HotspotId, Message, Room } from "@/lib/game/types";
 
 type Screen = "start" | "loading" | "room";
+
+const FALLBACK_NOTE = "The dungeon got its wires crossed, so you've been given a classic room instead.";
 
 async function requestRoom(objects: [string, string, string]): Promise<{ room: Room; usedFallback: boolean }> {
   const forceFallback = new URLSearchParams(window.location.search).has("fallback");
@@ -54,7 +56,7 @@ export default function GameShell() {
   if (screen === "loading") {
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
-        <p className="animate-pulse text-xl text-gold">Building your room…</p>
+        <p className="font-storybook animate-pulse text-2xl text-gold">Building your room…</p>
       </main>
     );
   }
@@ -76,36 +78,63 @@ export default function GameShell() {
   const onHotspot = (id: HotspotId) =>
     dispatch(game.selectedItem ? { type: "USE_ITEM", target: id } : { type: "INSPECT", target: id });
 
+  const message: Message | null =
+    game.message?.tone === "intro" && usedFallback
+      ? { ...game.message, lines: [FALLBACK_NOTE, ...game.message.lines] }
+      : game.message;
+  const heldItem = game.inventory.find((i) => i.id === game.selectedItem);
+  const machineFeedback = game.machineOpen && game.message?.tone === "wrong" ? game.message.lines[0] : null;
+
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-4 px-4 py-6">
-      <header>
-        <h1 className="text-3xl text-gold">{game.room.title}</h1>
-        <p className="text-ink/70">{game.room.theme}</p>
-        {usedFallback && (
-          <p className="mt-2 text-sm text-candle">The dungeon got its wires crossed, so here&apos;s a classic room instead.</p>
-        )}
-        <p className="mt-2 text-ink/90">{game.room.intro}</p>
+    <main
+      className="mx-auto flex min-h-screen flex-col gap-3 px-3 py-4 sm:px-6"
+      style={{ width: "min(100%, calc((100svh - 240px) * 1.6 + 48px), 72rem)", minWidth: "min(100%, 22rem)" }}
+    >
+      <header className="text-center">
+        <h1 className="text-3xl text-gold drop-shadow-[0_0_12px_rgba(242,193,78,0.35)] sm:text-4xl">{game.room.title}</h1>
+        <p className="font-storybook text-base italic text-ink/70 sm:text-lg">{game.room.theme}</p>
       </header>
-      <RoomScene state={game} onHotspot={onHotspot} />
-      {game.machineOpen && (
-        <CodeMachine
-          onSubmit={(code) => dispatch({ type: "ENTER_CODE", code })}
-          onClose={() => dispatch({ type: "CLOSE_MACHINE" })}
-        />
-      )}
-      <InspectPanel
-        message={game.message}
-        keyOffered={game.keyOffered}
-        keyName={game.room.keyItem.name}
-        onCollect={() => dispatch({ type: "COLLECT_KEY" })}
-      />
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Inventory
-          items={game.inventory}
-          selected={game.selectedItem}
-          onSelect={(item) => dispatch({ type: "SELECT_ITEM", item })}
-        />
-        <ClueJournal entries={game.journal} />
+
+      <div className="relative">
+        <RoomScene state={game} onHotspot={onHotspot} />
+        {heldItem && (
+          <p className="pointer-events-none absolute left-1/2 top-3 z-30 -translate-x-1/2 rounded-full bg-[rgba(20,26,58,0.85)] px-4 py-1 text-sm text-candle shadow-lg">
+            {heldItem.emoji} Use the {heldItem.name} on…
+          </p>
+        )}
+        {game.machineOpen && (
+          <CodeMachine
+            onSubmit={(code) => dispatch({ type: "ENTER_CODE", code })}
+            onClose={() => dispatch({ type: "CLOSE_MACHINE" })}
+            wrongAttempts={game.wrongAttempts}
+            feedback={machineFeedback}
+          />
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+        <div className="order-1 flex-1 sm:order-2">
+          <InspectPanel
+            message={message}
+            keyOffered={game.keyOffered}
+            keyName={game.room.keyItem.name}
+            keyEmoji={game.room.keyItem.emoji}
+            onCollect={() => dispatch({ type: "COLLECT_KEY" })}
+          />
+        </div>
+        <div className="order-2 flex items-center justify-between gap-3 sm:order-1">
+          <Inventory
+            items={game.inventory}
+            selected={game.selectedItem}
+            onSelect={(item) => dispatch({ type: "SELECT_ITEM", item })}
+          />
+          <div className="sm:hidden">
+            <ClueJournal entries={game.journal} />
+          </div>
+        </div>
+        <div className="order-3 hidden items-center sm:flex">
+          <ClueJournal entries={game.journal} />
+        </div>
       </div>
     </main>
   );

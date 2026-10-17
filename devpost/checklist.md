@@ -39,7 +39,17 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Learner check: Play two or three new rooms without hints first. Did you have to observe and connect traits to figure out where the key is and what order to read? Was it still fair? Then use the hints to check they escalate properly.
   Commit: `Riddle clues decoded from object traits`
 
-- [ ] **4. Hints that follow your progress**
+- [x] **4. The illustrated storybook room**
+  Becomes usable: The room looks like Pocket Dungeon. The midnight-blue and plum scene has warm golden light and drifting fireflies. Three glowing pedestals hold your objects (emoji plus a name plaque), with the machine, the box, and an arched door. Clickable things glow and pulse, and storybook headings appear throughout. The inventory, journal, inspect panel, and machine are styled as in-world panels.
+  Why now: The mechanics and AI are proven, and the learner asked to prioritize the visual redesign ("the UI hasn't visibly changed at all"), so it moved ahead of hints. It's time-boxed per the scope.
+  PRD ref: `prd.md > Look and Feel`, `prd.md > Screens and Layout`, `prd.md > Exploring and Inspecting`
+  Spec ref: `spec.md > Look and Feel`, `spec.md > RoomScene and Hotspot`, `spec.md > InspectPanel`, `spec.md > Inventory`, `spec.md > ClueJournal`, `spec.md > CodeMachine`
+  Build: Palette variables and fonts (IM Fell English, Nunito) in `layout.tsx`/`globals.css`. `RoomScene` from CSS shapes and inline SVG, a `Hotspot` with glow/pulse/hover/inspected states, and restyled panels. The layout must work at laptop width and stay usable on a narrow screen.
+  Verify (mechanical): `npm run build` and `npm test` pass. The dev server serves `/` with no console or server errors. The rendered room HTML contains six hotspots with accessible labels.
+  Learner check: Play a full room. Does it feel like a cozy, mysterious storybook room rather than a dashboard? Is it always clear what's clickable?
+  Commit: `Illustrated storybook room scene`
+
+- [ ] **5. Hints that follow your progress**
   Becomes usable: A hint button that's always available. Each press reveals the next of three levels for your current step: finding the key, opening the box, or cracking the code. Levels reset when you advance. Wrong-item use gets its in-world line.
   Why now: This completes the "clever but fair" promise on top of a working AI room. It's mostly reducer logic, so it's cheap to verify before visuals.
   PRD ref: `prd.md > Hints`, `prd.md > Inventory and Using Items`
@@ -48,16 +58,6 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Verify (mechanical): Reducer tests confirm that hints walk levels 1→3 in each step, reset when the step changes, stay at level 3, and never contain the code. `npm test` and `npm run build` pass.
   Learner check: In a fresh room, press hint three times before doing anything, then find the key and press hint again. Do the levels get more specific without giving the answer away?
   Commit: `Add progress-aware three-level hints`
-
-- [ ] **5. The illustrated storybook room**
-  Becomes usable: The room looks like Pocket Dungeon. The midnight-blue and plum scene has warm golden light and drifting fireflies. Three glowing pedestals hold your objects (emoji plus a name plaque), with the machine, the box, and an arched door. Clickable things glow and pulse, and storybook headings appear throughout. The inventory, journal, inspect panel, and machine are styled as in-world panels.
-  Why now: The mechanics and AI are proven, so visual time is now well spent. It's time-boxed per the scope: "simple enough that we can finish the full playable experience."
-  PRD ref: `prd.md > Look and Feel`, `prd.md > Screens and Layout`, `prd.md > Exploring and Inspecting`
-  Spec ref: `spec.md > Look and Feel`, `spec.md > RoomScene and Hotspot`, `spec.md > InspectPanel`, `spec.md > Inventory`, `spec.md > ClueJournal`, `spec.md > CodeMachine`
-  Build: Palette variables and fonts (IM Fell English, Nunito) in `layout.tsx`/`globals.css`. `RoomScene` from CSS shapes and inline SVG, a `Hotspot` with glow/pulse/hover/inspected states, and restyled panels. The layout must work at laptop width and stay usable on a narrow screen.
-  Verify (mechanical): `npm run build` and `npm test` pass. The dev server serves `/` with no console or server errors. The rendered room HTML contains six hotspots with accessible labels.
-  Learner check: Play a full room. Does it feel like a cozy, mysterious storybook room rather than a dashboard? Is it always clear what's clickable?
-  Commit: `Illustrated storybook room scene`
 
 - [ ] **6. Themed screens and motion**
   Becomes usable: A themed loading screen with a lantern animation and rotating in-world messages. An intro card, which shows the playful "classic room" note when the fallback was used. Discovery sparkles in the journal, a box lid-lift, a shake on a wrong code, and a light-spilling door-swing into a styled escape screen with the room code and "New room." Reduced-motion is respected. The README covers how to run and play.
@@ -100,3 +100,5 @@ Activity mode:
 - Next.js 16 allows only one `next dev` per project folder — if a dev server is already running, use it rather than starting another.
 - Added slice 3 "Clues you have to decode" (old slices 3–5 renumbered 4–6) — at the early checkpoint the learner found the puzzle "too predictable"; they chose riddle-based clues with engine-checked signature words and kept the fixed sequence. Different puzzle sequences are deferred (`prd.md > Possible Later Enhancements`). Their UI feedback (room as the focus, objects placed naturally, smaller inspection panels, a proper inventory/journal, subtle animation) shapes slices 5–6 without adding scope.
 - Live riddle rooms (4 very different object sets): all valid; 3 of 4 passed on the first attempt, and 1 was rejected for naming "tiny moon" in its clue, then passed on the retry. Latency is unchanged at ~10–14s per attempt.
+- Illustrated room moved ahead of hints (now slice 4; hints are slice 5) — the learner asked to see the visual redesign in the running app before more mechanics. Built as a 16:10 CSS/inline-SVG scene (wall, window, hanging lamp, shelf, pedestal, side table, arched door, brass machine, velvet box, rug, fireflies, vignette), with object curios as hotspots plus brass name plaques, a parchment narration strip, a leather satchel, a clue-journal book overlay, and a brass dial lock overlay. The intro now opens as the first parchment message. The scene sizes to the viewport height so the HUD stays on screen. Verified by scripted playthroughs in Edge at 1366×900, 1366×768, and 390×844 (all reached the escape screen).
+

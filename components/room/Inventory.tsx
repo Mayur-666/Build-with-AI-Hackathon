@@ -8,28 +8,32 @@ type Props = {
   onSelect: (id: Item["id"] | null) => void;
 };
 
+const SLOTS = 3;
+
+/** A leather satchel with item slots. Click an item to hold it, then click something in the room. */
 export function Inventory({ items, selected, onSelect }: Props) {
   return (
-    <section className="rounded-xl border border-plum bg-dusk p-4">
-      <h2 className="mb-2 text-gold">Inventory</h2>
-      {items.length === 0 ? (
-        <p className="text-sm text-ink/60">Nothing yet.</p>
-      ) : (
-        <ul className="flex flex-wrap gap-2">
-          {items.map((item) => (
-            <li key={item.id}>
-              <button
-                aria-pressed={selected === item.id}
-                onClick={() => onSelect(selected === item.id ? null : item.id)}
-                className={`rounded-lg border px-3 py-1 ${selected === item.id ? "border-gold bg-gold/20" : "border-plum"}`}
-              >
-                {item.emoji} {item.name}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {selected && <p className="mt-2 text-sm text-candle">Now click something to use it on.</p>}
+    <section aria-label="Satchel" className="satchel flex items-center gap-2 rounded-2xl px-3 py-2">
+      <span className="font-storybook mr-1 hidden text-sm text-candle/80 sm:inline">Satchel</span>
+      {Array.from({ length: SLOTS }, (_, i) => {
+        const item = items[i];
+        if (!item) return <span key={i} className="slot h-12 w-12 rounded-full" aria-hidden />;
+        const isSelected = selected === item.id;
+        return (
+          <button
+            key={item.id}
+            onClick={() => onSelect(isSelected ? null : item.id)}
+            aria-pressed={isSelected}
+            title={isSelected ? `Holding the ${item.name}. Click something in the room to use it.` : `Hold the ${item.name}`}
+            className={`slot pop-in grid h-12 w-12 place-items-center rounded-full text-2xl transition ${
+              isSelected ? "scale-110 ring-2 ring-gold shadow-[0_0_18px_rgba(242,193,78,0.8)]" : "hover:scale-105"
+            }`}
+          >
+            <span aria-hidden>{item.emoji}</span>
+            <span className="sr-only">{item.name}</span>
+          </button>
+        );
+      })}
     </section>
   );
 }

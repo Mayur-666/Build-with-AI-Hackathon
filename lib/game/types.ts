@@ -52,7 +52,7 @@ export type Room = RoomText & { solution: Solution; roomCode: string };
 
 export type JournalEntry = { id: "clue" | "order"; text: string };
 export type Item = { id: "key"; name: string; emoji: string };
-export type Message = { title: string; lines: string[]; tone?: "normal" | "wrong" | "discovery" };
+export type Message = { title: string; lines: string[]; tone?: "normal" | "wrong" | "discovery" | "intro" };
 
 export type GameState = {
   room: Room;

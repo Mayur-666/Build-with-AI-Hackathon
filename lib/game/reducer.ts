@@ -14,7 +14,7 @@ export function initialGameState(room: Room): GameState {
     hintLevel: 0,
     wrongAttempts: 0,
     machineOpen: false,
-    message: null,
+    message: { title: room.title, lines: [room.intro], tone: "intro" },
     escaped: false,
   };
 }
