@@ -75,7 +75,7 @@ EscapeScreen
 **Locally (build and demo recording):**
 1. Node.js 20.9+ (Next.js 16 requirement; verify with `node -v`).
 2. Copy `.env.example` → `.env.local` and set `GEMINI_API_KEY=...`. Never commit `.env.local`, and never paste the key into chat.
-3. `npm install`, then `npm run dev`, then open **http://localhost:3000**.
+3. `npm install`, then `npm run dev`, then open **http://localhost:3000** (landing page) and click **Play Now** (or go to `/play`).
 4. `npm test` runs the unit tests.
 
 **Deployed (optional, chosen by the learner):** Vercel, after the game works locally.
@@ -278,7 +278,8 @@ type GameState = {
 pocket-dungeon/ (repo root = this project folder)
 ├── app/
 │   ├── layout.tsx              # fonts (next/font), <body> background, metadata
-│   ├── page.tsx                # GameShell: screen switching, fetch, useReducer
+│   ├── page.tsx                # landing page: moonlit hero, how it works, Play Now → /play
+│   ├── play/page.tsx           # GameShell: screen switching, fetch, useReducer
 │   ├── globals.css             # palette variables, Tailwind import, keyframes, reduced-motion
 │   └── api/generate-room/
 │       └── route.ts            # POST handler: solution → Gemini → validate → fill → fallback

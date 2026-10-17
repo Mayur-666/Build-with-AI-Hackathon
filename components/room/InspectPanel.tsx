@@ -18,7 +18,7 @@ export function InspectPanel({ message, keyOffered, keyName, keyEmoji, onCollect
     <section
       key={key}
       aria-live="polite"
-      className={`parchment pop-in relative min-h-[5.5rem] rounded-xl px-5 py-3 ${message?.tone === "wrong" ? "shake" : ""} ${
+      className={`parchment pop-in relative min-h-[5.5rem] min-w-0 rounded-xl px-4 py-3 sm:px-5 ${message?.tone === "wrong" ? "shake" : ""} ${
         message?.tone === "discovery" ? "sparkle-in" : ""
       }`}
     >
@@ -31,7 +31,7 @@ export function InspectPanel({ message, keyOffered, keyName, keyEmoji, onCollect
             </p>
           ))}
           {keyOffered && (
-            <button onClick={onCollect} className="brass mt-2 rounded-full px-4 py-1 text-sm font-bold">
+            <button onClick={onCollect} className="brass mt-2 max-w-full rounded-full px-4 py-1 text-left text-sm font-bold whitespace-normal">
               {keyEmoji} Take the {keyName}
             </button>
           )}

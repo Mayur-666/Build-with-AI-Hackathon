@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 export const MAX_OBJECT_LENGTH = 40;
@@ -18,6 +19,9 @@ export function StartScreen({ onGenerate }: Props) {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-4">
+      <Link href="/" className="font-storybook self-center text-sm text-candle/70 hover:text-candle">
+        ← About Pocket Dungeon
+      </Link>
       <h1 className="text-center text-4xl text-gold">Pocket Dungeon</h1>
       <p className="text-center text-ink/80">Name three objects. We&apos;ll build a strange little room around them.</p>
       <form

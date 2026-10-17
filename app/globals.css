@@ -357,9 +357,9 @@ h3,
 }
 
 @keyframes sparkle-in {
-  0% { opacity: 0; transform: scale(0.9); box-shadow: 0 0 0 0 rgba(242, 193, 78, 0.9); }
-  40% { opacity: 1; transform: scale(1.02); box-shadow: 0 0 18px 6px rgba(242, 193, 78, 0.6); }
-  100% { transform: none; box-shadow: 0 0 0 0 rgba(242, 193, 78, 0); }
+  0% { opacity: 0; filter: brightness(1.25); }
+  40% { opacity: 1; filter: brightness(1.12) drop-shadow(0 0 10px rgba(242, 193, 78, 0.8)); }
+  100% { filter: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -388,7 +388,19 @@ h3,
 
 .room-head { grid-area: head; }
 .room-stage { grid-area: stage; position: relative; }
-.room-side { grid-area: side; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.room-side { grid-area: side; display: flex; flex-direction: column; gap: 12px; min-height: 0; min-width: 0; }
+
+/* Narration never scrolls sideways; padding leaves room for the shake and glow. */
+.message-scroll {
+  min-width: 0;
+  overflow-x: hidden;
+  padding: 4px 6px;
+  margin: -4px -6px;
+}
+
+.parchment {
+  overflow-wrap: anywhere;
+}
 
 @media (min-width: 760px) and (min-aspect-ratio: 5 / 4) {
   .room-layout {
@@ -406,5 +418,50 @@ h3,
     align-content: stretch;
   }
   .room-head { text-align: left; }
-  .room-side .message-scroll { flex: 1; min-height: 0; overflow-y: auto; }
+  .room-side .message-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #b8955a transparent; }
+}
+
+/* ───────────── Landing page ───────────── */
+
+.landing {
+  min-height: 100svh;
+}
+
+.landing-sky {
+  background:
+    radial-gradient(1.5px 1.5px at 12% 18%, #ffe8a8, transparent),
+    radial-gradient(1px 1px at 28% 8%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 44% 26%, #ffe8a8, transparent),
+    radial-gradient(1px 1px at 62% 12%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 81% 22%, #ffe8a8, transparent),
+    radial-gradient(1px 1px at 92% 6%, #fff, transparent),
+    radial-gradient(1px 1px at 6% 44%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 52% 52%, #ffe8a8, transparent),
+    radial-gradient(1px 1px at 72% 70%, #fff, transparent),
+    radial-gradient(1px 1px at 22% 78%, #ffe8a8, transparent),
+    radial-gradient(ellipse 60% 40% at 80% 0%, rgba(255, 232, 168, 0.12), transparent 70%);
+  animation: twinkle 7s ease-in-out infinite alternate;
+  opacity: 0.9;
+}
+
+.landing-moon {
+  background: radial-gradient(circle at 40% 40%, #fff6d6 0 22%, rgba(255, 232, 168, 0.35) 30%, transparent 68%);
+  filter: blur(0.5px);
+  z-index: 0;
+  animation: breathe-moon 8s ease-in-out infinite;
+}
+
+@keyframes breathe-moon {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+.landing-card {
+  background: linear-gradient(180deg, rgba(42, 35, 80, 0.85), rgba(28, 22, 58, 0.85));
+  border: 1px solid rgba(242, 193, 78, 0.22);
+  box-shadow: 0 20px 50px -25px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 232, 168, 0.08);
+}
+
+.door-glow {
+  filter: drop-shadow(0 0 1.4cqw rgba(242, 193, 78, 0.55));
 }

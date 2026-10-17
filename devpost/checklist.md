@@ -49,7 +49,27 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Learner check: Play a full room. Does it feel like a cozy, mysterious storybook room rather than a dashboard? Is it always clear what's clickable?
   Commit: `Illustrated storybook room scene`
 
-- [ ] **5. Hints that follow your progress**
+- [x] **5. Text stays in its panel, and a landing page**
+  Becomes usable: Narration text wraps inside the parchment on desktop and mobile, with no horizontal overflow. A separate landing page at `/` introduces Pocket Dungeon with a moonlit storybook hero, a short explanation of how to play, and a **Play Now** button. The game moves to `/play`.
+  Why now: The learner reported the overflow bug and asked for a landing page first.
+  PRD ref: `prd.md > Screens and Layout`, `prd.md > Look and Feel`
+  Spec ref: `spec.md > Look and Feel`, `spec.md > File Structure`, `spec.md > InspectPanel`
+  Build: Constrain and wrap the parchment text (no horizontal scroll). Add `app/page.tsx` as the landing page, reusing the scene art and palette. Move the game to `app/play/page.tsx`. Link back to the landing page from the start screen.
+  Verify (mechanical): `npm test` and `npm run build` pass. In Edge at 1000×733, 1366×768, and 390×844, the parchment's `scrollWidth` is ≤ its `clientWidth` after inspecting each object. `/` renders the landing page, and Play Now reaches `/play`, where a scripted playthrough escapes.
+  Learner check: Open http://localhost:3100. Does the landing page set the mood and make you want to play? Click Play Now, inspect objects, and confirm the text never spills sideways.
+  Commit: `Landing page and wrapped narration`
+
+- [ ] **6. Drag items onto the room**
+  Becomes usable: Pick up the key from the satchel and drag it onto things in the room, with mouse or touch. A target glows as you drag over it. Dropping on the box opens it; dropping elsewhere gets the playful wrong-item line. Click-to-hold-then-click still works as the accessible alternative.
+  Why now: The learner asked for it right after the landing page. It reuses the existing `USE_ITEM` rule, so no puzzle logic changes.
+  PRD ref: `prd.md > Inventory and Using Items`
+  Spec ref: `spec.md > Inventory`, `spec.md > RoomScene and Hotspot`, `spec.md > Game reducer (lib/game/reducer.ts)`
+  Build: Pointer-events drag (one implementation for mouse and touch) from satchel slots, a floating drag ghost, hit-testing hotspots via `data-hotspot`, hover highlighting, and a drop dispatching `SELECT_ITEM` + `USE_ITEM`. Esc or dropping outside cancels.
+  Verify (mechanical): Reducer tests cover the drop paths (key on box opens it; key elsewhere gives the wrong-item line and keeps the key). A scripted Edge playthrough drags the key onto a wrong target, then onto the box, and escapes, at desktop size and with touch emulation. `npm test` and `npm run build` pass.
+  Learner check: Collect the key and drag it around the room. Do targets light up? Drop it on the door, then on the box. Then try click-to-use once.
+  Commit: `Drag items from the satchel onto the room`
+
+- [ ] **7. Hints that follow your progress**
   Becomes usable: A hint button that's always available. Each press reveals the next of three levels for your current step: finding the key, opening the box, or cracking the code. Levels reset when you advance. Wrong-item use gets its in-world line.
   Why now: This completes the "clever but fair" promise on top of a working AI room. It's mostly reducer logic, so it's cheap to verify before visuals.
   PRD ref: `prd.md > Hints`, `prd.md > Inventory and Using Items`
@@ -59,7 +79,17 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Learner check: In a fresh room, press hint three times before doing anything, then find the key and press hint again. Do the levels get more specific without giving the answer away?
   Commit: `Add progress-aware three-level hints`
 
-- [ ] **6. Themed screens and motion**
+- [ ] **8. Sound and extra game feel**
+  Becomes usable: Subtle sounds for inspecting, collecting, unlocking, a wrong code, and escaping, plus optional ambient music. Everything is off until the player turns sound on with a visible toggle. Includes a few extra interactions beyond clicking, to be agreed with the learner.
+  Why now: The learner wants more game feel. It goes after hints so the core experience is complete first.
+  PRD ref: `prd.md > Look and Feel`
+  Spec ref: `spec.md > Look and Feel`
+  Build: To be detailed once the learner picks the extra interactions and decides the door question.
+  Verify (mechanical): `npm test` and `npm run build` pass. A scripted playthrough with sound enabled shows no console errors. Audio stays silent until the toggle is pressed.
+  Learner check: Turn sound on and play a room. Are the sounds pleasant and not repetitive? Does the toggle work?
+  Commit: `Sound and extra interactions`
+
+- [ ] **9. Themed screens and motion**
   Becomes usable: A themed loading screen with a lantern animation and rotating in-world messages. An intro card, which shows the playful "classic room" note when the fallback was used. Discovery sparkles in the journal, a box lid-lift, a shake on a wrong code, and a light-spilling door-swing into a styled escape screen with the room code and "New room." Reduced-motion is respected. The README covers how to run and play.
   Why now: This is the polish layer on a complete, working game. If time runs short, it's the safest to trim.
   PRD ref: `prd.md > The Core Journey` (steps 2, 4, 10), `prd.md > Starting a Room`, `prd.md > Escape Screen`, `prd.md > States and Boundaries`, `prd.md > Look and Feel`
@@ -103,3 +133,7 @@ Activity mode:
 - Illustrated room moved ahead of hints (now slice 4; hints are slice 5) — the learner asked to see the visual redesign in the running app before more mechanics. Built as a 16:10 CSS/inline-SVG scene (wall, window, hanging lamp, shelf, pedestal, side table, arched door, brass machine, velvet box, rug, fireflies, vignette), with object curios as hotspots plus brass name plaques, a parchment narration strip, a leather satchel, a clue-journal book overlay, and a brass dial lock overlay. The intro now opens as the first parchment message. The scene sizes to the viewport height so the HUD stays on screen. Verified by scripted playthroughs in Edge at 1366×900, 1366×768, and 390×844 (all reached the escape screen).
 
 - Room page uses a side-by-side layout on landscape screens (scene left at full height, sidebar right with title, scrolling parchment, satchel, journal); it still stacks on portrait/narrow. Reason: the learner's ~1000×730 window couldn't fit the stacked layout on one screen. Verified at 1000×733, 1366×768, 1920×1080, and 390×844.
+- Added slices 5 (wrapped narration + landing page), 6 (drag-and-drop), and 8 (sound + extra game feel); hints → 7, themed screens → 9 — learner-requested scope after seeing the illustrated room. Each slice stays independently shippable. Two decisions are pending before slice 8: the door's role (proposal: the machine releases the door's missing piece) and which extra interactions to add.
+- Overflow fix done defensively: headless Edge (overlay scrollbars) couldn't reproduce the learner's horizontal scrollbar, so the narration area is `overflow-x: hidden` with inner padding, text uses `overflow-wrap: anywhere`, the take button wraps, and the discovery sparkle no longer scales the panel (scale/shake were the likely trigger with classic scrollbars). Measured: no horizontal overflow after inspecting every hotspot at 1000×733 and 390×844.
+- The game moved from `/` to `/play`; `/` is the landing page. The dev fallback flag is now `/play?fallback`.
+
