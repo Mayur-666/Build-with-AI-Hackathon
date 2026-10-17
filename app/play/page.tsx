@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useReducer, useRef, useState } from "react";
+import { AdventureHub, type RoomStatus } from "@/components/AdventureHub";
 import { DisturbanceScreen, type DisturbanceReason } from "@/components/DisturbanceScreen";
 import { EscapeScreen, type EscapeAction, type EscapeStats } from "@/components/EscapeScreen";
 import { LoadingScreen } from "@/components/LoadingScreen";
@@ -14,17 +15,18 @@ import { LockDialog } from "@/components/room/LockDialog";
 import { RoomScene } from "@/components/room/RoomScene";
 import { useItemDrag } from "@/components/room/useItemDrag";
 import type { FallbackReason } from "@/lib/ai/errors";
-import { catalogueRoom } from "@/lib/catalogue";
+import { CATALOGUE, catalogueRoom } from "@/lib/catalogue";
 import { lockOf, newProgress, revealedHintLevel, step } from "@/lib/engine/engine";
 import { fromChainRoom } from "@/lib/engine/fromChainRoom";
-import { browserStorage, findByCode, loadCurrent, loadPlaythrough, newSaveId, savePlaythrough, type Loaded } from "@/lib/engine/saves";
+import { browserStorage, findByCode, listPlaythroughs, loadCurrent, loadPlaythrough, newSaveId, savePlaythrough, type Loaded } from "@/lib/engine/saves";
 import type { Action, AdventureDef, Message, Progress } from "@/lib/engine/types";
 import { validateAdventure } from "@/lib/engine/validate";
 import { buildFallbackRoom } from "@/lib/game/fallbackRoom";
 import type { Room } from "@/lib/game/types";
 
 type Trio = [string, string, string];
-type Screen = "restoring" | "create" | "loading" | "disturbance" | "room" | "escaped";
+type Screen = "restoring" | "hub" | "create" | "loading" | "disturbance" | "room" | "escaped";
+type HubData = { status: Record<string, RoomStatus>; customs: Loaded[]; current: Loaded | null };
 type RoomResponse = { room: Room; usedFallback: boolean; fallbackReason?: FallbackReason };
 type Session = { def: AdventureDef; saveId: string; createdAt: number };
 
@@ -84,6 +86,8 @@ export default function GameShell() {
   const [confirmRestart, setConfirmRestart] = useState(false);
   const [classicNote, setClassicNote] = useState(false);
   const [play, dispatch] = useReducer(playReducer, null);
+  const [hub, setHub] = useState<HubData | null>(null);
+  const [restartTarget, setRestartTarget] = useState<Loaded | null>(null);
 
   // Short-lived reactions in the scene.
   const lastTarget = useRef<string | null>(null);
@@ -127,7 +131,7 @@ export default function GameShell() {
   };
 
   /** Start a brand-new playthrough of a room, with its own save ID. */
-  const beginPlaythrough = (def: AdventureDef, opts: { classic?: boolean } = {}) => {
+  const beginPlaythrough = (def: AdventureDef, opts: { classic?: boolean; replace?: boolean } = {}) => {
     const saveId = newSaveId();
     const createdAt = Date.now();
     const p = newProgress(def);
@@ -136,33 +140,60 @@ export default function GameShell() {
     setStats(null);
     setNotice(null);
     setClassicNote(!!opts.classic);
+    setHub(null);
     prevItems.current = 0;
     savePlaythrough(browserStorage(), catalogueRoom, playthroughRecord(def, saveId, createdAt, p, null), def.kind === "custom" ? def : undefined);
-    setPlayUrl(`save=${saveId}`, true);
+    setPlayUrl(`save=${saveId}`, !opts.replace);
     setScreen("room");
+  };
+
+  /** Read every playthrough in this browser for the hub. */
+  const openHub = (push = false) => {
+    const storage = browserStorage();
+    const plays = listPlaythroughs(storage, catalogueRoom);
+    const status: Record<string, RoomStatus> = {};
+    for (const def of CATALOGUE) {
+      const mine = plays.filter((p) => p.roomId === def.id);
+      const latest = mine[0] ? loadPlaythrough(storage, catalogueRoom, mine[0].saveId) : null;
+      status[def.id] = { latest, escapes: mine.filter((p) => p.progress.escaped).length };
+    }
+    const seen = new Set<string>();
+    const customs = plays
+      .filter((p) => p.origin === "custom" && !seen.has(p.roomId) && seen.add(p.roomId))
+      .slice(0, 4)
+      .flatMap((p) => loadPlaythrough(storage, catalogueRoom, p.saveId) ?? []);
+    setHub({ status, customs, current: loadCurrent(storage, catalogueRoom) });
+    dispatch({ type: "END" });
+    setSession(null);
+    setPlayUrl("", push);
+    setScreen("hub");
   };
 
   const route = () => {
     const params = new URLSearchParams(window.location.search);
     const storage = browserStorage();
-    if (params.has("new")) {
+    if (params.has("new") || params.has("create")) {
       dispatch({ type: "END" });
       setSession(null);
       setScreen("create");
       return;
     }
-    const wanted = params.get("save") ?? params.get("room");
-    const found = wanted
-      ? params.has("save")
-        ? loadPlaythrough(storage, catalogueRoom, wanted)
-        : findByCode(storage, catalogueRoom, wanted)
-      : loadCurrent(storage, catalogueRoom);
-    if (found) return resume(found);
-    if (wanted) setNotice(`${wanted.toUpperCase()} isn't saved in this browser, so here's a fresh start.`);
-    dispatch({ type: "END" });
-    setSession(null);
-    setPlayUrl("new");
-    setScreen("create");
+    const saveId = params.get("save");
+    const roomId = params.get("room");
+    if (saveId) {
+      const found = loadPlaythrough(storage, catalogueRoom, saveId);
+      if (found) return resume(found);
+      setNotice(`${saveId.toUpperCase()} isn't saved in this browser.`);
+      return openHub();
+    }
+    if (roomId) {
+      const found = findByCode(storage, catalogueRoom, roomId);
+      if (found) return resume(found);
+      const def = catalogueRoom(roomId);
+      if (def) return beginPlaythrough(def, { replace: true });
+      setNotice(`${roomId.toUpperCase()} isn't a room in this browser.`);
+    }
+    openHub();
   };
 
   // localStorage is only read after mount, so server and client HTML match. Back/Forward re-route.
@@ -259,9 +290,56 @@ export default function GameShell() {
       <DisturbanceScreen
         reason={disturbance.reason}
         onRetry={() => startCustom(objects)}
+        onExplore={() => openHub(true)}
         onClassic={() => beginPlaythrough(fromChainRoom(disturbance.classic, { relics: objects }), { classic: true })}
         onChangeObjects={toCreate}
       />
+    );
+  }
+
+  if (screen === "hub" && hub) {
+    return (
+      <>
+        {notice && (
+          <p role="status" className="parchment fixed left-1/2 top-4 z-40 -translate-x-1/2 rounded-xl px-4 py-2 text-sm">
+            🕯️ {notice}
+          </p>
+        )}
+        <AdventureHub
+          catalogue={CATALOGUE}
+          status={hub.status}
+          customs={hub.customs}
+          current={hub.current}
+          onPlay={(def) => beginPlaythrough(def)}
+          onContinue={(saveId) => {
+            const found = loadPlaythrough(browserStorage(), catalogueRoom, saveId);
+            if (found) {
+              setPlayUrl(`save=${saveId}`, true);
+              resume(found);
+            }
+          }}
+          onRestart={setRestartTarget}
+          onCreate={() => (setObjects(null), toCreate())}
+        />
+        {restartTarget && (
+          <ConfirmDialog
+            icon="🕯️"
+            title={`Start ${restartTarget.def.title} over?`}
+            body="Everything you've found in this playthrough will be forgotten. Your other playthroughs are untouched."
+            confirmLabel="Restart"
+            cancelLabel="Keep my progress"
+            onConfirm={() => {
+              const { play: old, def } = restartTarget;
+              const fresh = { ...old, createdAt: Date.now(), savedAt: Date.now(), progress: newProgress(def), stats: null };
+              savePlaythrough(browserStorage(), catalogueRoom, fresh, def.kind === "custom" ? def : undefined);
+              setRestartTarget(null);
+              setPlayUrl(`save=${old.saveId}`, true);
+              resume({ play: fresh, def });
+            }}
+            onCancel={() => setRestartTarget(null)}
+          />
+        )}
+      </>
     );
   }
 
@@ -269,7 +347,8 @@ export default function GameShell() {
     const def = session.def;
     const actions: EscapeAction[] = [{ label: "↻ Play this room again", onClick: () => beginPlaythrough(def), primary: true }];
     if (def.relics) actions.push({ label: "✨ Same relics, new room", onClick: () => startCustom(def.relics!) });
-    actions.push({ label: "🎲 Choose new relics", onClick: () => (setObjects(null), toCreate()) });
+    if (def.relics) actions.push({ label: "🎲 Choose new relics", onClick: () => (setObjects(null), toCreate()) });
+    actions.push({ label: "🗺️ All adventures", onClick: () => openHub(true) });
     return (
       <EscapeScreen
         title={def.title}
@@ -358,7 +437,7 @@ export default function GameShell() {
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 lg:justify-start">
-          <button onClick={toCreate} className="font-storybook text-sm text-candle/60 underline-offset-4 hover:text-candle hover:underline">
+          <button onClick={() => openHub(true)} className="font-storybook text-sm text-candle/60 underline-offset-4 hover:text-candle hover:underline">
             Leave this room
           </button>
           <button onClick={() => setConfirmRestart(true)} className="font-storybook text-sm text-candle/60 underline-offset-4 hover:text-candle hover:underline">

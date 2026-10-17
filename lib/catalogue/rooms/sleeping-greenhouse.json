@@ -1,0 +1,276 @@
+{
+  "id": "sleeping-greenhouse",
+  "version": 1,
+  "kind": "catalogue",
+  "title": "The Sleeping Greenhouse",
+  "theme": "A hundred years asleep, and a thorny vine has sealed the only door.",
+  "description": "Wake a fern, bribe a biting cactus, and read a gardener's poem to set a stone guardian's symbol rings.",
+  "difficulty": "devious",
+  "backdrop": "greenhouse",
+  "intro": "The greenhouse fell asleep a hundred years ago, and so did everything in it. Moonlight drips through cracked glass. A thorny vine has sealed the door, and a mossy stone guardian stands watch over it, holding three rings of carved symbols.",
+  "items": {
+    "can": { "name": "empty watering can", "emoji": "🪣" },
+    "moonwater": { "name": "can of moonwater", "emoji": "💧" },
+    "honey": { "name": "honey drop", "emoji": "🍯" }
+  },
+  "clues": {
+    "poem": "Scratched into the potting bench: \"First the bloom that drinks the moon, then the jaws that snap at noon, last the fern that sleeps in tune.\"",
+    "moonSymbol": "The moonflower's centre is etched with ☾.",
+    "sunSymbol": "Carved into the snapjaw cactus's pot: ☀.",
+    "flowerSymbol": "Hidden in the fern's fronds: ✿."
+  },
+  "hotspots": [
+    {
+      "id": "door",
+      "name": "door",
+      "art": "door",
+      "spot": [41.5, 12.5, 17, 54],
+      "tag": "hover",
+      "looks": [{ "when": { "flags": ["vinesGone"] }, "state": "unlocked" }],
+      "inspect": [
+        {
+          "when": { "flags": ["vinesGone"] },
+          "title": "The door",
+          "say": ["The withered vines crumble to dust as you push, and the door swings open onto a garden full of fireflies."],
+          "tone": "success",
+          "do": [{ "escape": true }]
+        },
+        {
+          "title": "The door",
+          "say": ["Thorny vines have grown across the door, thick as rope. They tighten when you touch them, and the stone guardian's eyes follow your hand."],
+          "tone": "locked"
+        }
+      ]
+    },
+    {
+      "id": "moonflower",
+      "name": "moonflower",
+      "art": "emoji",
+      "emoji": "🌼",
+      "spot": [6.5, 32, 13, 17],
+      "plinth": "shelf",
+      "looks": [{ "when": {}, "state": "lit" }],
+      "inspect": [
+        {
+          "when": { "notFlags": ["took:honey"] },
+          "say": ["A moonflower, the only thing here wide awake, glowing softly. Etched in its centre: ☾. A single honey drop trembles on one petal."],
+          "tone": "discovery",
+          "do": [{ "clue": "moonSymbol" }, { "offer": "honey" }]
+        },
+        {
+          "say": ["The moonflower glows softly, drinking the moonlight. Etched in its centre: ☾."],
+          "do": [{ "clue": "moonSymbol" }]
+        }
+      ]
+    },
+    {
+      "id": "barrel",
+      "name": "rain barrel",
+      "art": "emoji",
+      "emoji": "🛢️",
+      "spot": [22, 44, 12, 22],
+      "plinth": "floor",
+      "inspect": [{ "say": ["A barrel brimming with rainwater. The moon floats on its surface like a coin someone dropped."] }],
+      "use": [
+        {
+          "item": "can",
+          "rules": [
+            {
+              "say": ["You dip the can. The rainwater comes up shimmering silver, as if you'd scooped up a little of the moon."],
+              "tone": "discovery",
+              "do": [{ "take": "can" }, { "give": "moonwater" }]
+            }
+          ]
+        },
+        { "item": "moonwater", "rules": [{ "say": ["The can is already full to the brim."] }] }
+      ]
+    },
+    {
+      "id": "fern",
+      "name": "sleeping fern",
+      "art": "emoji",
+      "emoji": "🌿",
+      "spot": [62.5, 24, 13, 17],
+      "plinth": "shelf",
+      "looks": [{ "when": { "flags": ["fernAwake"] }, "state": "open" }],
+      "inspect": [
+        {
+          "when": { "flags": ["fernAwake"] },
+          "say": ["The fern has unfurled, stretching and yawning. Hidden in its fronds is a symbol of a flower: ✿."],
+          "do": [{ "clue": "flowerSymbol" }]
+        },
+        { "say": ["A fern curled into a tight green fist, fast asleep. Something is hidden deep in its fronds, out of reach."] }
+      ],
+      "use": [
+        {
+          "item": "moonwater",
+          "rules": [
+            {
+              "when": { "notFlags": ["fernAwake"] },
+              "say": ["You water the fern with moonwater. It shivers, uncurls, and yawns, revealing a symbol hidden in its fronds: ✿."],
+              "tone": "discovery",
+              "do": [{ "take": "moonwater" }, { "set": "fernAwake" }, { "clue": "flowerSymbol" }]
+            }
+          ]
+        },
+        { "item": "can", "rules": [{ "say": ["The can is empty. The fern doesn't even stir."] }] }
+      ]
+    },
+    {
+      "id": "bench",
+      "name": "potting bench",
+      "art": "emoji",
+      "emoji": "🪴",
+      "spot": [64, 47, 12, 15],
+      "plinth": "table",
+      "inspect": [
+        {
+          "when": { "notFlags": ["took:can"] },
+          "say": [
+            "A potting bench buried in soil and seed packets. A poem is scratched into the wood: \"First the bloom that drinks the moon, then the jaws that snap at noon, last the fern that sleeps in tune.\"",
+            "A battered watering can sits on top."
+          ],
+          "tone": "discovery",
+          "do": [{ "clue": "poem" }, { "offer": "can" }]
+        },
+        {
+          "say": ["Scratched into the wood: \"First the bloom that drinks the moon, then the jaws that snap at noon, last the fern that sleeps in tune.\""],
+          "do": [{ "clue": "poem" }]
+        }
+      ]
+    },
+    {
+      "id": "snapjaw",
+      "name": "snapjaw cactus",
+      "art": "emoji",
+      "emoji": "🌵",
+      "size": "lg",
+      "spot": [80, 32, 14, 34],
+      "plinth": "floor",
+      "looks": [{ "when": { "flags": ["cactusCalm"] }, "state": "open" }],
+      "inspect": [
+        {
+          "when": { "flags": ["cactusCalm"] },
+          "say": ["The snapjaw cactus is purring, its belly full of honey. Carved into its pot: ☀."],
+          "do": [{ "clue": "sunSymbol" }]
+        },
+        {
+          "say": ["A cactus with a mouth full of thorns. It snaps at your fingers before you can see what's carved into its pot."],
+          "tone": "locked"
+        }
+      ],
+      "use": [
+        {
+          "item": "honey",
+          "rules": [
+            {
+              "when": { "notFlags": ["cactusCalm"] },
+              "say": ["You toss the honey drop. The cactus gulps it down, purrs, and lolls aside, revealing a symbol carved into its pot: ☀."],
+              "tone": "discovery",
+              "do": [{ "take": "honey" }, { "set": "cactusCalm" }, { "clue": "sunSymbol" }]
+            }
+          ]
+        },
+        {
+          "item": "moonwater",
+          "rules": [{ "say": ["The cactus slurps the water and snaps at you anyway. Water isn't what it wants."], "tone": "wrong", "do": [{ "take": "moonwater" }, { "give": "can" }] }]
+        }
+      ]
+    },
+    {
+      "id": "guardian",
+      "name": "stone guardian",
+      "art": "emoji",
+      "emoji": "🗿",
+      "spot": [26, 70, 13, 20],
+      "plinth": "floor",
+      "looks": [{ "when": { "flags": ["vinesGone"] }, "state": "active" }],
+      "inspect": [
+        { "when": { "flags": ["vinesGone"] }, "say": ["The stone guardian has lowered its arms. Its job is done."] },
+        { "say": ["A moss-covered stone guardian holds three rings of carved symbols. Its stone eyes are fixed on the vine-covered door."] }
+      ],
+      "lock": {
+        "id": "guardian",
+        "title": "The stone guardian",
+        "prompt": "Turn the three rings of symbols.",
+        "dials": [
+          ["☾", "☀", "✿", "❄", "✦"],
+          ["☾", "☀", "✿", "❄", "✦"],
+          ["☾", "☀", "✿", "❄", "✦"]
+        ],
+        "answer": ["☾", "☀", "✿"],
+        "knowledge": ["poem", "moonSymbol", "sunSymbol", "flowerSymbol"],
+        "solved": {
+          "title": "The stone guardian",
+          "say": ["The rings grind into place: ☾ ☀ ✿. The guardian lowers its arms, and with a long, dry hiss the vines across the door wither and fall away."],
+          "tone": "unlock",
+          "do": [{ "set": "vinesGone" }]
+        },
+        "wrong": [
+          "The rings grind and slip back. The guardian does not move.",
+          "A low rumble of stone. Wrong symbols, or the wrong order.",
+          "Moss sprinkles down. The guardian waits."
+        ]
+      }
+    }
+  ],
+  "hints": [
+    {
+      "id": "bench",
+      "when": { "notFlags": ["took:can"] },
+      "levels": [
+        "Start where the gardener worked.",
+        "The potting bench has something to read and something to carry.",
+        "Inspect the potting bench: read the poem and take the watering can."
+      ]
+    },
+    {
+      "id": "fern",
+      "when": { "notFlags": ["fernAwake"] },
+      "levels": [
+        "The sleeping fern needs waking. What do plants love?",
+        "An empty can won't help. Where could you fill it?",
+        "Fill the watering can at the rain barrel, then use it on the sleeping fern."
+      ]
+    },
+    {
+      "id": "cactus",
+      "when": { "notFlags": ["cactusCalm"] },
+      "levels": [
+        "The snapjaw cactus is hiding something, but it bites.",
+        "Something sweet might calm it. The moonflower is holding something.",
+        "Take the honey drop from the moonflower and give it to the snapjaw cactus."
+      ]
+    },
+    {
+      "id": "rings",
+      "when": { "notFlags": ["vinesGone"] },
+      "levels": [
+        "Each plant shows a symbol, and the poem gives an order.",
+        "Match each line of the poem to a plant: the bloom that drinks the moon, the jaws that snap, the fern that sleeps.",
+        "Moonflower ☾, snapjaw cactus ☀, fern ✿. Set the guardian's rings to ☾ ☀ ✿."
+      ]
+    },
+    {
+      "id": "leave",
+      "levels": ["The vines are gone.", "The door is clear now.", "Click the door to leave the greenhouse."]
+    }
+  ],
+  "wrongItemLine": "A leaf shakes its head at you. That doesn't belong there.",
+  "escapeText": "The last vine crumbles, the door swings open on a garden full of fireflies, and behind you a hundred sleeping plants stir and turn their faces to the moon.",
+  "solution": [
+    { "type": "INSPECT", "target": "bench" },
+    { "type": "TAKE", "item": "can" },
+    { "type": "DROP_ITEM", "item": "can", "target": "barrel" },
+    { "type": "DROP_ITEM", "item": "moonwater", "target": "fern" },
+    { "type": "INSPECT", "target": "moonflower" },
+    { "type": "TAKE", "item": "honey" },
+    { "type": "DROP_ITEM", "item": "honey", "target": "snapjaw" },
+    { "type": "INSPECT", "target": "guardian" },
+    { "type": "SET_DIAL", "lock": "guardian", "dial": 0, "index": 0 },
+    { "type": "SET_DIAL", "lock": "guardian", "dial": 1, "index": 1 },
+    { "type": "SET_DIAL", "lock": "guardian", "dial": 2, "index": 2 },
+    { "type": "SUBMIT_LOCK", "lock": "guardian" },
+    { "type": "INSPECT", "target": "door" }
+  ]
+}

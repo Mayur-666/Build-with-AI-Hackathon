@@ -61,7 +61,7 @@ export function AdventureActions() {
           <div className="mt-3 flex flex-wrap gap-3">
             {saved.play.progress.escaped ? (
               <>
-                <Link href="/play?new" className={primary}>
+                <Link href="/play" className={primary}>
                   New Adventure →
                 </Link>
                 <Link href={`/play?save=${encodeURIComponent(saved.play.saveId)}`} className={secondary}>
@@ -73,7 +73,7 @@ export function AdventureActions() {
                 <Link href={`/play?save=${encodeURIComponent(saved.play.saveId)}`} className={primary}>
                   Continue Adventure →
                 </Link>
-                <Link href="/play?new" className={secondary}>
+                <Link href="/play" className={secondary}>
                   New Adventure
                 </Link>
               </>
@@ -82,8 +82,8 @@ export function AdventureActions() {
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-5">
-          <Link href="/play?new" className={primary}>
-            Play Now <span aria-hidden>→</span>
+          <Link href="/play" className={primary}>
+            Choose Your Adventure <span aria-hidden>→</span>
           </Link>
           <a href="#how" className="font-storybook text-lg text-candle/80 underline-offset-4 hover:text-candle hover:underline">
             How it works

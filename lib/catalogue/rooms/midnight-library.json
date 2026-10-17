@@ -1,0 +1,229 @@
+{
+  "id": "midnight-library",
+  "version": 1,
+  "kind": "catalogue",
+  "title": "The Midnight Library",
+  "theme": "The last lamp went out an hour ago, and someone locked the door behind you.",
+  "description": "Light a lamp, read what was written in invisible ink, and find the word that opens the glass cabinet.",
+  "difficulty": "gentle",
+  "backdrop": "library",
+  "intro": "The last lamp in the Midnight Library went out an hour ago, and someone locked the door behind you. Rows of sleeping books lean together in the dark. You can just make out a cold oil lamp, a writing desk, and a glass cabinet, and the great oak door has a keyhole shaped like a crescent moon.",
+  "items": {
+    "matches": { "name": "box of matches", "emoji": "🔥" },
+    "crescentKey": { "name": "crescent key", "emoji": "🗝️" }
+  },
+  "clues": {
+    "ink": "Silver words on the blank letter, visible only in lamplight: \"Only the glowing spines will speak. Read them from the tallest to the shortest.\"",
+    "spines": "In lamplight, three spines glow on the bookshelf: a squat little Wax and Wick, a towering Nocturnes for Owls, and a middling Orchard of Echoes."
+  },
+  "hotspots": [
+    {
+      "id": "door",
+      "name": "door",
+      "art": "door",
+      "spot": [41.5, 12.5, 17, 54],
+      "tag": "hover",
+      "looks": [{ "when": { "flags": ["doorUnlocked"] }, "state": "unlocked" }],
+      "inspect": [
+        {
+          "when": { "flags": ["doorUnlocked"] },
+          "title": "The door",
+          "say": ["The crescent key turns one last time, and the oak door yawns open onto the rain-washed night."],
+          "tone": "success",
+          "do": [{ "escape": true }]
+        },
+        {
+          "title": "The door",
+          "say": ["A heavy oak door. Its keyhole is shaped like a crescent moon, and nothing in your pockets fits it."],
+          "tone": "locked"
+        }
+      ],
+      "use": [
+        {
+          "item": "crescentKey",
+          "rules": [
+            {
+              "when": { "notFlags": ["doorUnlocked"] },
+              "title": "The door",
+              "say": ["The crescent key slides home and turns with a sigh. Somewhere inside the door, old bolts slide back."],
+              "tone": "unlock",
+              "do": [{ "take": "crescentKey" }, { "set": "doorUnlocked" }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lamp",
+      "name": "oil lamp",
+      "art": "emoji",
+      "emoji": "🪔",
+      "spot": [7, 35, 13, 17],
+      "plinth": "shelf",
+      "looks": [{ "when": { "flags": ["lampLit"] }, "state": "lit" }],
+      "inspect": [
+        {
+          "when": { "flags": ["lampLit"] },
+          "say": ["The oil lamp burns steady and gold, throwing warm light across the shelves and the desk."]
+        },
+        {
+          "say": ["A cold oil lamp. The wick is dry but whole. It only needs a flame."]
+        }
+      ],
+      "use": [
+        {
+          "item": "matches",
+          "rules": [
+            {
+              "when": { "notFlags": ["lampLit"] },
+              "title": "oil lamp",
+              "say": ["You strike a match. The wick catches, and warm light spills across the room. On the desk, something on the blank letter begins to shimmer."],
+              "tone": "discovery",
+              "do": [{ "take": "matches" }, { "set": "lampLit" }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bookshelf",
+      "name": "bookshelf",
+      "art": "emoji",
+      "emoji": "📚",
+      "size": "lg",
+      "spot": [22, 26, 16, 40],
+      "plinth": "floor",
+      "inspect": [
+        {
+          "when": { "flags": ["lampLit"] },
+          "say": ["In the lamplight, three spines glow faintly among the hundreds: a squat little Wax and Wick, a towering Nocturnes for Owls, and a middling Orchard of Echoes."],
+          "tone": "discovery",
+          "do": [{ "clue": "spines" }]
+        },
+        {
+          "say": ["Hundreds of books lean together, whispering dust. It's far too dark to read a single spine."]
+        }
+      ]
+    },
+    {
+      "id": "desk",
+      "name": "writing desk",
+      "art": "emoji",
+      "emoji": "📜",
+      "spot": [62.5, 42, 13, 17],
+      "plinth": "table",
+      "inspect": [
+        {
+          "when": { "flags": ["lampLit"] },
+          "say": ["In the lamplight, silver words bloom across the blank letter: \"Only the glowing spines will speak. Read them from the tallest to the shortest.\""],
+          "tone": "discovery",
+          "do": [{ "clue": "ink" }]
+        },
+        {
+          "when": { "notFlags": ["took:matches"] },
+          "say": ["A writing desk with a half-finished letter, completely blank, as if the ink never was. In the drawer, a box of matches rattles."],
+          "tone": "discovery",
+          "do": [{ "offer": "matches" }]
+        },
+        {
+          "say": ["The letter is still blank. Perhaps it needs a different kind of light."]
+        }
+      ]
+    },
+    {
+      "id": "cabinet",
+      "name": "glass cabinet",
+      "art": "emoji",
+      "emoji": "🗄️",
+      "size": "lg",
+      "spot": [80, 30, 14, 36],
+      "plinth": "floor",
+      "looks": [{ "when": { "flags": ["solved:cabinet"] }, "state": "open" }],
+      "inspect": [
+        {
+          "when": { "flags": ["solved:cabinet"], "notFlags": ["took:crescentKey"] },
+          "say": ["The cabinet stands open. On a velvet cushion lies a key shaped like a crescent moon."],
+          "do": [{ "offer": "crescentKey" }]
+        },
+        { "when": { "flags": ["solved:cabinet"] }, "say": ["The cabinet stands open and empty."] },
+        {
+          "say": ["A glass-fronted cabinet. Its lock has three lettered dials, and behind the glass something crescent-shaped glints."]
+        }
+      ],
+      "lock": {
+        "id": "cabinet",
+        "title": "The glass cabinet",
+        "prompt": "Three lettered dials. Spell the word.",
+        "dials": [
+          ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"],
+          ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"],
+          ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
+        ],
+        "answer": ["N", "O", "W"],
+        "knowledge": ["ink", "spines"],
+        "solved": {
+          "title": "The glass cabinet",
+          "say": ["N, O, W. The dials click home, the glass door swings open, and a crescent key gleams on a velvet cushion."],
+          "tone": "unlock",
+          "do": [{ "offer": "crescentKey" }]
+        },
+        "wrong": [
+          "The dials clunk and spin back. That isn't the word.",
+          "A tiny bell inside the cabinet tuts at you.",
+          "Nothing. The cabinet keeps its secret."
+        ]
+      }
+    }
+  ],
+  "hints": [
+    {
+      "id": "light",
+      "when": { "notFlags": ["lampLit"] },
+      "levels": [
+        "It's far too dim to read anything properly in here.",
+        "The oil lamp only needs a flame. Is there anything in the room that makes one?",
+        "Take the matches from the desk drawer and use them on the oil lamp."
+      ]
+    },
+    {
+      "id": "read",
+      "when": { "notFlags": ["solved:cabinet"] },
+      "levels": [
+        "Now the lamp is lit, look again at things that were hard to read.",
+        "Both the letter on the desk and the bookshelf change in lamplight. Read them both.",
+        "Read the glowing spines tallest to shortest: Nocturnes, Orchard, Wax. Their first letters spell the cabinet's word."
+      ]
+    },
+    {
+      "id": "key",
+      "when": { "notFlags": ["took:crescentKey"] },
+      "levels": ["The cabinet is open now.", "Something is waiting inside the open cabinet.", "Inspect the cabinet and take the crescent key."]
+    },
+    {
+      "id": "door",
+      "when": { "notFlags": ["doorUnlocked"] },
+      "levels": ["That key has a very particular shape.", "Look closely at the door's keyhole.", "Use the crescent key on the door."]
+    },
+    {
+      "id": "leave",
+      "levels": ["The door is unlocked.", "Nothing is holding you here now.", "Click the door to step out into the night."]
+    }
+  ],
+  "wrongItemLine": "You try it, but nothing happens. A book somewhere snickers.",
+  "escapeText": "The oak door swings wide and the cool night air smells of rain and old paper. Behind you, the Midnight Library sighs, and goes back to sleep.",
+  "solution": [
+    { "type": "INSPECT", "target": "desk" },
+    { "type": "TAKE", "item": "matches" },
+    { "type": "DROP_ITEM", "item": "matches", "target": "lamp" },
+    { "type": "INSPECT", "target": "desk" },
+    { "type": "INSPECT", "target": "bookshelf" },
+    { "type": "INSPECT", "target": "cabinet" },
+    { "type": "SET_DIAL", "lock": "cabinet", "dial": 0, "index": 13 },
+    { "type": "SET_DIAL", "lock": "cabinet", "dial": 1, "index": 14 },
+    { "type": "SET_DIAL", "lock": "cabinet", "dial": 2, "index": 22 },
+    { "type": "SUBMIT_LOCK", "lock": "cabinet" },
+    { "type": "TAKE", "item": "crescentKey" },
+    { "type": "DROP_ITEM", "item": "crescentKey", "target": "door" },
+    { "type": "INSPECT", "target": "door" }
+  ]
+}

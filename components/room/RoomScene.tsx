@@ -113,7 +113,7 @@ export function RoomScene({ def, progress, onHotspot, dragOver, nope, poked, esc
             {h.art === "emoji" && (
               <>
                 <span className="curio-glow" />
-                <span className="curio-emoji absolute bottom-0 left-1/2 -translate-x-1/2">{look?.emoji ?? h.emoji}</span>
+                <span className={`curio-emoji size-${h.size ?? "md"} absolute bottom-0 left-1/2 -translate-x-1/2`}>{look?.emoji ?? h.emoji}</span>
               </>
             )}
           </Hotspot>

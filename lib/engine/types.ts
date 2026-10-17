@@ -57,6 +57,8 @@ export type HotspotDef = {
   /** Left, top, width, height in % of the scene. */
   spot: [number, number, number, number];
   plinth?: "shelf" | "pedestal" | "table" | "floor" | "wall";
+  /** Size of emoji art: small trinkets to tall furniture. */
+  size?: "sm" | "md" | "lg";
   tag?: "always" | "hover";
   looks?: Look[];
   inspect: Rule[];

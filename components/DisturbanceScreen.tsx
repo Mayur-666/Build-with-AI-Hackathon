@@ -40,12 +40,13 @@ const COPY: Record<DisturbanceReason, { title: string; body: string; plain: stri
 type Props = {
   reason: DisturbanceReason;
   onRetry: () => void;
+  onExplore: () => void;
   onClassic: () => void;
   onChangeObjects: () => void;
 };
 
 /** A failed generation, shown as a disturbance in the dungeon's magic, with ways forward. */
-export function DisturbanceScreen({ reason, onRetry, onClassic, onChangeObjects }: Props) {
+export function DisturbanceScreen({ reason, onRetry, onExplore, onClassic, onChangeObjects }: Props) {
   const c = COPY[reason];
   return (
     <main className="relative flex min-h-svh flex-col items-center justify-center gap-6 overflow-hidden px-4 py-10 text-center">
@@ -88,15 +89,20 @@ export function DisturbanceScreen({ reason, onRetry, onClassic, onChangeObjects 
           ↻ Try again
         </button>
         <button
-          onClick={onClassic}
+          onClick={onExplore}
           className={`rounded-full px-6 py-3 font-extrabold transition hover:scale-105 ${c.retryHelps ? "satchel text-candle" : "brass"}`}
         >
-          🏮 Enter the classic room
+          🗺️ Explore prebuilt rooms
         </button>
       </div>
-      <button onClick={onChangeObjects} className="font-storybook relative text-candle/75 underline-offset-4 hover:text-candle hover:underline">
-        Choose different relics
-      </button>
+      <div className="font-storybook relative flex flex-wrap justify-center gap-x-6 gap-y-1 text-candle/75">
+        <button onClick={onChangeObjects} className="underline-offset-4 hover:text-candle hover:underline">
+          Choose different relics
+        </button>
+        <button onClick={onClassic} className="underline-offset-4 hover:text-candle hover:underline">
+          Step into the classic room
+        </button>
+      </div>
     </main>
   );
 }

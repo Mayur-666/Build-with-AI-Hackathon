@@ -39,10 +39,10 @@ const FIREFLIES = [
 function PlayNow({ className = "" }: { className?: string }) {
   return (
     <Link
-      href="/play?new"
+      href="/play"
       className={`brass inline-flex items-center gap-2 rounded-full px-8 py-3 text-lg font-extrabold tracking-wide transition hover:scale-105 hover:shadow-[0_0_30px_rgba(242,193,78,0.6)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold ${className}`}
     >
-      Play Now <span aria-hidden>→</span>
+      Choose Your Adventure <span aria-hidden>→</span>
     </Link>
   );
 }

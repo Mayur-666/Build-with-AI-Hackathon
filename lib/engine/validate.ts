@@ -55,6 +55,7 @@ export const adventureSchema = z
             emoji: str.optional(),
             spot: z.tuple([pct, pct, pct, pct]),
             plinth: z.enum(["shelf", "pedestal", "table", "floor", "wall"]).optional(),
+            size: z.enum(["sm", "md", "lg"]).optional(),
             tag: z.enum(["always", "hover"]).optional(),
             looks: z.array(z.object({ when: cond, emoji: str.optional(), state: z.enum(["open", "active", "lit", "unlocked"]) }).strict()).optional(),
             inspect: z.array(rule).min(1),

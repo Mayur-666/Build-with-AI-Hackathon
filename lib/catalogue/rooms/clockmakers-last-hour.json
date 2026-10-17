@@ -1,0 +1,258 @@
+{
+  "id": "clockmakers-last-hour",
+  "version": 1,
+  "kind": "catalogue",
+  "title": "The Clockmaker's Last Hour",
+  "theme": "Every clock stopped the moment the clockmaker vanished.",
+  "description": "Rebuild a broken gear train, wake the workshop's clocks, and set the hour the clockmaker left.",
+  "difficulty": "tricky",
+  "backdrop": "workshop",
+  "intro": "The clockmaker vanished at the stroke of an hour no one remembers, and every clock in his workshop stopped with him. Dust hangs in the air like a held breath. The door has no keyhole at all, only a brass bolt wired to a towering grandfather clock.",
+  "items": {
+    "smallGear": { "name": "little brass gear", "emoji": "⚙️" },
+    "greatGear": { "name": "great iron wheel", "emoji": "☸️" }
+  },
+  "clues": {
+    "diary": "The clockmaker's diary: \"I stopped every clock at the very moment my cuckoo first sang tonight, a quarter past the hour.\"",
+    "cuckoo": "The cuckoo burst out and sang seven times, exactly, before sulking back inside."
+  },
+  "hotspots": [
+    {
+      "id": "door",
+      "name": "door",
+      "art": "door",
+      "spot": [41.5, 12.5, 17, 54],
+      "tag": "hover",
+      "looks": [{ "when": { "flags": ["doorUnlocked"] }, "state": "unlocked" }],
+      "inspect": [
+        {
+          "when": { "flags": ["doorUnlocked"] },
+          "title": "The door",
+          "say": ["The bolt hangs loose. You pull the door open, and the workshop exhales."],
+          "tone": "success",
+          "do": [{ "escape": true }]
+        },
+        {
+          "title": "The door",
+          "say": ["No keyhole, no handle, only a heavy brass bolt. A thin wire runs from it across the ceiling to the grandfather clock."],
+          "tone": "locked"
+        }
+      ]
+    },
+    {
+      "id": "toolbox",
+      "name": "toolbox",
+      "art": "emoji",
+      "emoji": "🧰",
+      "spot": [7, 49, 12, 17],
+      "plinth": "floor",
+      "inspect": [
+        {
+          "when": { "notFlags": ["took:greatGear"] },
+          "say": ["Under a tangle of springs and tiny screws: a great iron wheel, heavy as a held breath, its teeth still bright with oil."],
+          "tone": "discovery",
+          "do": [{ "offer": "greatGear" }]
+        },
+        { "say": ["Springs, screws, and the smell of oil. Nothing else of use."] }
+      ]
+    },
+    {
+      "id": "geartrain",
+      "name": "gear train",
+      "art": "machine",
+      "spot": [22, 20, 13, 46],
+      "tag": "hover",
+      "looks": [{ "when": { "flags": ["running"] }, "state": "active" }],
+      "inspect": [
+        {
+          "when": { "flags": ["running"] },
+          "title": "The gear train",
+          "say": ["Every wheel turns in time now, ticking like a heartbeat. Up on the wall, the cuckoo clock stirs."]
+        },
+        {
+          "when": { "flags": ["placed:small"] },
+          "title": "The gear train",
+          "say": ["The little gear sits snugly on its axle. A great empty axle still waits beside it."]
+        },
+        {
+          "when": { "flags": ["placed:great"] },
+          "title": "The gear train",
+          "say": ["The great wheel sits heavy on its axle. A small empty axle still waits beside it."]
+        },
+        {
+          "title": "The gear train",
+          "say": ["The heart of the workshop: a train of wheels with two empty axles, one small and one large. Without them, every clock here is dead."]
+        }
+      ],
+      "use": [
+        {
+          "item": "smallGear",
+          "rules": [
+            {
+              "when": { "flags": ["placed:great"] },
+              "title": "The gear train",
+              "say": ["The little gear slips on. The wheels catch, shudder, and begin to turn! Above you, a cuckoo clock clears its throat."],
+              "tone": "unlock",
+              "do": [{ "take": "smallGear" }, { "set": "placed:small" }, { "set": "running" }]
+            },
+            {
+              "title": "The gear train",
+              "say": ["The little gear slips onto the small axle with a satisfying click. It still needs its larger partner."],
+              "tone": "discovery",
+              "do": [{ "take": "smallGear" }, { "set": "placed:small" }]
+            }
+          ]
+        },
+        {
+          "item": "greatGear",
+          "rules": [
+            {
+              "when": { "flags": ["placed:small"] },
+              "title": "The gear train",
+              "say": ["The great wheel drops into place. The wheels catch, shudder, and begin to turn! Above you, a cuckoo clock clears its throat."],
+              "tone": "unlock",
+              "do": [{ "take": "greatGear" }, { "set": "placed:great" }, { "set": "running" }]
+            },
+            {
+              "title": "The gear train",
+              "say": ["The great wheel settles onto the large axle with a deep clunk. It still needs a smaller partner."],
+              "tone": "discovery",
+              "do": [{ "take": "greatGear" }, { "set": "placed:great" }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cuckoo",
+      "name": "cuckoo clock",
+      "art": "emoji",
+      "emoji": "🐦",
+      "spot": [62, 10, 12, 18],
+      "plinth": "wall",
+      "looks": [{ "when": { "flags": ["running"] }, "state": "active" }],
+      "inspect": [
+        {
+          "when": { "flags": ["running"] },
+          "say": ["The little door snaps open and the cuckoo bursts out, singing seven times exactly, then sulks back inside."],
+          "tone": "discovery",
+          "do": [{ "clue": "cuckoo" }]
+        },
+        { "say": ["A carved cuckoo clock, its little door shut tight. Its pendulum hangs dead still."] }
+      ]
+    },
+    {
+      "id": "workbench",
+      "name": "workbench",
+      "art": "emoji",
+      "emoji": "🛠️",
+      "spot": [62.5, 42, 13, 17],
+      "plinth": "table",
+      "inspect": [
+        {
+          "when": { "notFlags": ["took:smallGear"] },
+          "say": [
+            "Tools lie exactly where the clockmaker dropped them. His diary lies open: \"I stopped every clock at the very moment my cuckoo first sang tonight, a quarter past the hour.\"",
+            "Beside it, a little brass gear."
+          ],
+          "tone": "discovery",
+          "do": [{ "clue": "diary" }, { "offer": "smallGear" }]
+        },
+        {
+          "say": ["The diary lies open: \"I stopped every clock at the very moment my cuckoo first sang tonight, a quarter past the hour.\""],
+          "do": [{ "clue": "diary" }]
+        }
+      ]
+    },
+    {
+      "id": "grandfather",
+      "name": "grandfather clock",
+      "art": "emoji",
+      "emoji": "🕰️",
+      "size": "lg",
+      "spot": [80, 14, 14, 52],
+      "plinth": "floor",
+      "looks": [
+        { "when": { "flags": ["solved:clock"] }, "state": "open" },
+        { "when": { "flags": ["running"] }, "state": "active" }
+      ],
+      "inspect": [
+        {
+          "when": { "flags": ["solved:clock"] },
+          "say": ["Its hands rest at a quarter past seven. The wire to the door hangs slack."]
+        },
+        {
+          "when": { "flags": ["running"] },
+          "say": ["A tall grandfather clock, ticking again at last. Its hands turn freely now. A wire runs from its case to the door's bolt."]
+        },
+        {
+          "say": ["A tall grandfather clock, frozen. Its hands won't budge, as if the whole workshop has stopped breathing."],
+          "tone": "locked"
+        }
+      ],
+      "lock": {
+        "id": "clock",
+        "title": "The grandfather clock",
+        "prompt": "Set the hour hand and the minute hand.",
+        "dials": [
+          ["1","2","3","4","5","6","7","8","9","10","11","12"],
+          ["00","15","30","45"]
+        ],
+        "answer": ["7", "15"],
+        "when": { "flags": ["running"] },
+        "knowledge": ["diary", "cuckoo"],
+        "solved": {
+          "title": "The grandfather clock",
+          "say": ["You set the hands to a quarter past seven. The clock chimes once, low and certain, and the wire to the door goes slack: the bolt is drawn."],
+          "tone": "unlock",
+          "do": [{ "set": "doorUnlocked" }]
+        },
+        "wrong": [
+          "The clock ticks disapprovingly. Not that hour.",
+          "A hollow chime. The clockmaker never left at that time.",
+          "The hands shiver and slip back to where they were."
+        ]
+      }
+    }
+  ],
+  "hints": [
+    {
+      "id": "gears",
+      "when": { "notFlags": ["running"] },
+      "levels": [
+        "Every clock here has stopped. What makes a clock go?",
+        "The gear train has two empty axles, one small and one large. Both missing pieces are somewhere in the workshop.",
+        "Take the little gear from the workbench and the great wheel from the toolbox, then use both on the gear train."
+      ]
+    },
+    {
+      "id": "time",
+      "when": { "notFlags": ["solved:clock"] },
+      "levels": [
+        "Now that things are moving, listen to the clocks.",
+        "The diary on the workbench says when the clockmaker stopped the clocks. The cuckoo clock tells you the hour.",
+        "The cuckoo sings seven times, and the diary says a quarter past. Set the grandfather clock to 7:15."
+      ]
+    },
+    {
+      "id": "leave",
+      "levels": ["The door's bolt was wired to the grandfather clock.", "Listen: the bolt has been drawn.", "Click the door to leave the workshop."]
+    }
+  ],
+  "wrongItemLine": "That doesn't fit anywhere here. The clockmaker would have tutted.",
+  "escapeText": "The bolt slides back, the door creaks open, and behind you every clock in the workshop begins to tick again, as if to say goodbye.",
+  "solution": [
+    { "type": "INSPECT", "target": "workbench" },
+    { "type": "TAKE", "item": "smallGear" },
+    { "type": "INSPECT", "target": "toolbox" },
+    { "type": "TAKE", "item": "greatGear" },
+    { "type": "DROP_ITEM", "item": "smallGear", "target": "geartrain" },
+    { "type": "DROP_ITEM", "item": "greatGear", "target": "geartrain" },
+    { "type": "INSPECT", "target": "cuckoo" },
+    { "type": "INSPECT", "target": "grandfather" },
+    { "type": "SET_DIAL", "lock": "clock", "dial": 0, "index": 6 },
+    { "type": "SET_DIAL", "lock": "clock", "dial": 1, "index": 1 },
+    { "type": "SUBMIT_LOCK", "lock": "clock" },
+    { "type": "INSPECT", "target": "door" }
+  ]
+}
