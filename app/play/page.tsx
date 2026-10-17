@@ -21,6 +21,7 @@ import { fromChainRoom } from "@/lib/engine/fromChainRoom";
 import { browserStorage, findByCode, listPlaythroughs, loadCurrent, loadPlaythrough, newSaveId, savePlaythrough, type Loaded } from "@/lib/engine/saves";
 import type { Action, AdventureDef, Message, Progress } from "@/lib/engine/types";
 import { validateAdventure } from "@/lib/engine/validate";
+import { sound, type Sfx } from "@/lib/audio";
 import { buildFallbackRoom } from "@/lib/game/fallbackRoom";
 import type { Room } from "@/lib/game/types";
 
@@ -89,6 +90,13 @@ export default function GameShell() {
   const [hub, setHub] = useState<HubData | null>(null);
   const [restartTarget, setRestartTarget] = useState<Loaded | null>(null);
 
+  // Player actions (as opposed to loading a save) are marked so their results can make a sound.
+  const acted = useRef(false);
+  const act = (a: Action) => {
+    acted.current = true;
+    dispatch(a);
+  };
+
   // Short-lived reactions in the scene.
   const lastTarget = useRef<string | null>(null);
   const prevItems = useRef(0);
@@ -102,7 +110,7 @@ export default function GameShell() {
 
   const { drag, handlersFor } = useItemDrag((item, target) => {
     lastTarget.current = target;
-    dispatch({ type: "DROP_ITEM", item, target });
+    act({ type: "DROP_ITEM", item, target });
   });
 
   // ── Entering, resuming, routing ──
@@ -210,6 +218,15 @@ export default function GameShell() {
     if (!play || !session || (screen !== "room" && screen !== "escaped")) return;
     savePlaythrough(browserStorage(), catalogueRoom, playthroughRecord(session.def, session.saveId, session.createdAt, play.p, play.p.escaped ? stats : null));
   }, [play, session, stats, screen]);
+
+  // ── Sound: each result of a player action gets its own small sound ──
+  const lastMessage = play?.p.message;
+  useEffect(() => {
+    if (!acted.current || !lastMessage) return;
+    acted.current = false;
+    const byTone: Record<string, Sfx> = { discovery: "discovery", unlock: "unlock", wrong: "wrong", locked: "locked", hint: "hint", success: "escape" };
+    sound.play(lastMessage.title === "Collected" ? "collect" : (byTone[lastMessage.tone ?? ""] ?? "inspect"));
+  }, [lastMessage]);
 
   // ── Scene reactions ──
   const message = play?.p.message;
@@ -370,9 +387,9 @@ export default function GameShell() {
   const { def, p } = play;
   const onHotspot = (id: string) => {
     lastTarget.current = id;
-    if (p.selectedItem) return dispatch({ type: "USE_ITEM", target: id });
+    if (p.selectedItem) return act({ type: "USE_ITEM", target: id });
     flash(setPoked, id, 600);
-    dispatch({ type: "INSPECT", target: id });
+    act({ type: "INSPECT", target: id });
   };
   const shown: Message | null =
     p.message?.tone === "intro" && classicNote ? { ...p.message, lines: [CLASSIC_NOTE, ...p.message.lines] } : p.message;
@@ -405,13 +422,13 @@ export default function GameShell() {
           <LockDialog
             lock={openLock}
             values={p.dials[openLock.id] ?? openLock.dials.map(() => 0)}
-            onTurn={(dial, delta) => dispatch({ type: "TURN_DIAL", lock: openLock.id, dial, delta })}
-            onSet={(dial, index) => dispatch({ type: "SET_DIAL", lock: openLock.id, dial, index })}
+            onTurn={(dial, delta) => (sound.play("dial"), dispatch({ type: "TURN_DIAL", lock: openLock.id, dial, delta }))}
+            onSet={(dial, index) => (sound.play("dial"), dispatch({ type: "SET_DIAL", lock: openLock.id, dial, index }))}
             onSubmit={() => {
               lastTarget.current = null;
-              dispatch({ type: "SUBMIT_LOCK", lock: openLock.id });
+              act({ type: "SUBMIT_LOCK", lock: openLock.id });
             }}
-            onClose={() => dispatch({ type: "CLOSE_LOCK" })}
+            onClose={() => act({ type: "CLOSE_LOCK" })}
             wrongAttempts={p.wrongAttempts}
             feedback={lockFeedback}
           />
@@ -420,19 +437,19 @@ export default function GameShell() {
 
       <aside className="room-side">
         <div className="message-scroll">
-          <InspectPanel message={shown} offered={p.offered.map((id) => ({ id, ...def.items[id] }))} onTake={(item) => dispatch({ type: "TAKE", item })} />
+          <InspectPanel message={shown} offered={p.offered.map((id) => ({ id, ...def.items[id] }))} onTake={(item) => act({ type: "TAKE", item })} />
         </div>
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3">
           <Inventory
             items={items}
             selected={p.selectedItem}
-            onSelect={(item) => dispatch({ type: "SELECT_ITEM", item })}
+            onSelect={(item) => act({ type: "SELECT_ITEM", item })}
             dragHandlers={handlersFor}
             dragging={drag?.item.id ?? null}
             fresh={freshItem}
           />
           <div className="ml-auto flex items-center gap-2">
-            <HintButton level={revealedHintLevel(def, p)} onHint={() => dispatch({ type: "REQUEST_HINT" })} />
+            <HintButton level={revealedHintLevel(def, p)} onHint={() => act({ type: "REQUEST_HINT" })} />
             <ClueJournal entries={p.journal.map((id) => ({ id, text: def.clues[id] }))} />
           </div>
         </div>

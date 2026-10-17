@@ -1,0 +1,33 @@
+"use client";
+
+import { sound, useSound } from "@/lib/audio";
+
+/** Two small toggles: sound effects and music. Both start off. */
+export function SoundControls() {
+  const prefs = useSound();
+  const base = "satchel grid h-10 w-10 place-items-center rounded-full text-lg transition hover:scale-105";
+  return (
+    <div className="fixed right-3 top-3 z-50 flex gap-2" role="group" aria-label="Sound">
+      <button
+        onClick={() => sound.setSfx(!prefs.sfx)}
+        aria-pressed={prefs.sfx}
+        aria-label={prefs.sfx ? "Sound effects on" : "Sound effects off"}
+        title={prefs.sfx ? "Sound effects: on" : "Sound effects: off"}
+        className={`${base} ${prefs.sfx ? "ring-2 ring-gold" : "opacity-75"}`}
+      >
+        <span aria-hidden>{prefs.sfx ? "🔊" : "🔈"}</span>
+      </button>
+      <button
+        onClick={() => sound.setMusic(!prefs.music)}
+        aria-pressed={prefs.music}
+        aria-label={prefs.music ? "Music on" : "Music off"}
+        title={prefs.music ? "Music: on" : "Music: off"}
+        className={`${base} ${prefs.music ? "ring-2 ring-gold" : "opacity-75"}`}
+      >
+        <span aria-hidden className={prefs.music ? "" : "opacity-50"}>
+          🎵
+        </span>
+      </button>
+    </div>
+  );
+}
