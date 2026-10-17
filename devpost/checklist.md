@@ -9,7 +9,7 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
 
 ## Slices
 
-- [ ] **1. Escape a classic room, start to finish**
+- [x] **1. Escape a classic room, start to finish**
   Becomes usable: A running Next.js app where you type three objects, click generate, and play the handwritten fallback room end to end. You can inspect things, find the clue, take the key, use it on the box, read the order clue, enter the code on the machine (wrong codes get a playful line), and reach a plain escape screen with a room code. The styling is basic, with no AI yet.
   Why now: The learner's priority is "a full playable puzzle first." This proves the rules half of the kernel: the engine picks the solution, fills placeholders, and the reducer enforces the chain. It also builds the fallback room the AI path depends on. Bootstrapping lives here.
   PRD ref: `prd.md > The Core Journey` (steps 1, 5–10), `prd.md > Starting a Room`, `prd.md > Exploring and Inspecting`, `prd.md > Inventory and Using Items`, `prd.md > The Combination Machine`, `prd.md > Escape Screen`

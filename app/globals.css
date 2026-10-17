@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+:root {
+  --midnight: #141a3a;
+  --dusk: #2a2350;
+  --plum: #5b4a7a;
+  --gold: #f2c14e;
+  --candle: #ffe8a8;
+  --ink: #f4ecdc;
+}
+
+@theme inline {
+  --color-midnight: var(--midnight);
+  --color-dusk: var(--dusk);
+  --color-plum: var(--plum);
+  --color-gold: var(--gold);
+  --color-candle: var(--candle);
+  --color-ink: var(--ink);
+}
+
+body {
+  background: var(--midnight);
+  color: var(--ink);
+  min-height: 100vh;
+}
