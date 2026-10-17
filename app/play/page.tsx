@@ -16,10 +16,12 @@ import { useItemDrag } from "@/components/room/useItemDrag";
 import type { FallbackReason } from "@/lib/ai/errors";
 import { buildFallbackRoom } from "@/lib/game/fallbackRoom";
 import { gameReducer, initialGameState, revealedHintLevel } from "@/lib/game/reducer";
+import { browserStorage, loadByCode, loadCurrent, saveAdventure, toAdventure, type SavedAdventure } from "@/lib/game/save";
 import type { GameAction, GameState, HotspotId, Message, Room } from "@/lib/game/types";
 
 type Trio = [string, string, string];
-type Screen = "start" | "loading" | "disturbance" | "room" | "escaped";
+type Screen = "restoring" | "start" | "loading" | "disturbance" | "room" | "escaped";
+type Dials = [number, number, number];
 type RoomResponse = { room: Room; usedFallback: boolean; fallbackReason?: FallbackReason };
 
 const CLASSIC_NOTE = "You stepped through into the classic room, an old favourite the dungeon keeps for nights like this.";
@@ -47,11 +49,20 @@ function hotspotName(game: GameState, id: HotspotId): string {
   return { machine: "the strange machine", box: "the box", exit: "the door" }[id];
 }
 
+/** Keep the URL pointing at what's on screen, without adding history entries. */
+function setPlayUrl(query: string) {
+  const fallback = new URLSearchParams(window.location.search).get("fallback");
+  const keep = fallback !== null ? `${query ? "&" : ""}fallback=${fallback}` : "";
+  window.history.replaceState(window.history.state, "", `/play${query || keep ? "?" : ""}${query}${keep}`);
+}
+
 const prefersReducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /** Holds the current screen and runs the game reducer for the active room. */
 export default function GameShell() {
-  const [screen, setScreen] = useState<Screen>("start");
+  const [screen, setScreen] = useState<Screen>("restoring");
+  const [notice, setNotice] = useState<string | null>(null);
+  const [dials, setDials] = useState<Dials>([0, 0, 0]);
   const [objects, setObjects] = useState<Trio | null>(null);
   const [disturbance, setDisturbance] = useState<{ reason: DisturbanceReason; classic: Room } | null>(null);
   const [inClassicRoom, setInClassicRoom] = useState(false);
@@ -60,8 +71,9 @@ export default function GameShell() {
   const [stats, setStats] = useState<EscapeStats | null>(null);
 
   const [game, dispatch] = useReducer(
-    (state: GameState | null, action: GameAction | { type: "LOAD"; room: Room } | { type: "RESET" }) => {
+    (state: GameState | null, action: GameAction | { type: "LOAD"; room: Room } | { type: "RESTORE"; game: GameState } | { type: "RESET" }) => {
       if (action.type === "LOAD") return initialGameState(action.room);
+      if (action.type === "RESTORE") return action.game;
       if (action.type === "RESET") return null;
       return state && gameReducer(state, action);
     },
@@ -127,11 +139,75 @@ export default function GameShell() {
     return () => clearTimeout(t);
   }, [game?.escaped, game?.wrongAttempts, game?.hintsUsed, game?.journal.length, screen]);
 
+  // ── Persistence ──
+  // On load: ?room=CODE resumes that saved room; ?new starts fresh; otherwise resume the current save.
+  // localStorage is only touched here, after mount, so server and client render the same HTML.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const storage = browserStorage();
+    const wanted = params.get("room");
+    if (params.has("new")) {
+      setScreen("start");
+      return;
+    }
+    const saved = wanted ? loadByCode(storage, wanted) : loadCurrent(storage);
+    if (saved) {
+      resume(saved);
+      return;
+    }
+    if (wanted) setNotice(`Room ${wanted.toUpperCase()} isn't saved in this browser, so here's a fresh start.`);
+    setPlayUrl(wanted ? "new" : "");
+    setScreen("start");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const resume = (saved: SavedAdventure) => {
+    dispatch({ type: "RESTORE", game: saved.game });
+    setObjects(saved.objects);
+    setInClassicRoom(saved.inClassicRoom);
+    setDials(saved.dials);
+    startedAt.current = saved.createdAt;
+    prevItems.current = saved.game.inventory.length;
+    setPlayUrl(`room=${encodeURIComponent(saved.roomCode)}`);
+    if (saved.game.escaped) {
+      setStats(
+        saved.stats ?? {
+          seconds: Math.max(1, Math.round((saved.savedAt - saved.createdAt) / 1000)),
+          wrongAttempts: saved.game.wrongAttempts,
+          hintsUsed: saved.game.hintsUsed,
+          cluesFound: saved.game.journal.length,
+        },
+      );
+      setScreen("escaped");
+    } else {
+      setScreen("room");
+    }
+  };
+
+  // Autosave after every change to the adventure (actions, dials, the ending).
+  useEffect(() => {
+    if (!game || (screen !== "room" && screen !== "escaped")) return;
+    saveAdventure(
+      browserStorage(),
+      toAdventure({
+        createdAt: startedAt.current,
+        objects,
+        inClassicRoom,
+        game,
+        dials,
+        stats: game.escaped ? stats : null,
+      }),
+    );
+  }, [game, dials, stats, objects, inClassicRoom, screen]);
+
   const enterRoom = (room: Room, classic: boolean) => {
     dispatch({ type: "LOAD", room });
     setInClassicRoom(classic);
+    setDials([0, 0, 0]);
+    setNotice(null);
     startedAt.current = Date.now();
     prevItems.current = 0;
+    setPlayUrl(`room=${encodeURIComponent(room.roomCode)}`);
     setScreen("room");
   };
 
@@ -146,8 +222,17 @@ export default function GameShell() {
 
   const toStart = () => {
     dispatch({ type: "RESET" });
+    setPlayUrl("new");
     setScreen("start");
   };
+
+  if (screen === "restoring") {
+    return (
+      <main className="flex min-h-svh items-center justify-center">
+        <p className="font-storybook animate-pulse text-xl text-candle/80">Lighting the lantern…</p>
+      </main>
+    );
+  }
 
   if (screen === "loading" && objects) return <LoadingScreen objects={objects} />;
 
@@ -176,7 +261,9 @@ export default function GameShell() {
     );
   }
 
-  if (screen !== "room" || !game) return <StartScreen key={objects?.join("|") ?? "new"} onGenerate={startRoom} initial={objects ?? undefined} />;
+  if (screen !== "room" || !game) {
+    return <StartScreen key={objects?.join("|") ?? "new"} onGenerate={startRoom} initial={objects ?? undefined} notice={notice} />;
+  }
 
   const onHotspot = (id: HotspotId) => {
     if (game.selectedItem) {
@@ -226,6 +313,8 @@ export default function GameShell() {
             onClose={() => dispatch({ type: "CLOSE_MACHINE" })}
             wrongAttempts={game.wrongAttempts}
             feedback={machineFeedback}
+            digits={dials}
+            onDigitsChange={setDials}
           />
         )}
       </div>

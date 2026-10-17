@@ -268,8 +268,8 @@ type GameState = {
 | Data | Where it lives | How it updates | When you leave and come back |
 |---|---|---|---|
 | Three object names | `StartScreen` input state, then the request body | Typing | Gone |
-| Solution and room text | Created on the server per request, then held in `GameShell` state as `Room` | Once per generate | Gone (no persistence, as decided in the PRD) |
-| Game progress | `useReducer` in `GameShell` | Reducer actions | Gone. Refresh means a new room |
+| Solution and room text | Created on the server per request, then held in `GameShell` and saved with the adventure | Once per generate | Restored from the save; never regenerated |
+| Game progress | `useReducer` in `GameShell`, autosaved to localStorage (`lib/game/save.ts`) | Reducer actions → autosave effect | Restored exactly from the save (URL `/play?room=CODE`) |
 | API key | `.env.local` locally, Vercel env vars when deployed | Set by hand | Never sent to the browser |
 
 ## File Structure
@@ -306,7 +306,8 @@ pocket-dungeon/ (repo root = this project folder)
 │   │   ├── validate.ts         # validateRoomText()
 │   │   ├── fill.ts             # fillRoom(), roomCode
 │   │   ├── fallbackRoom.ts     # handwritten classic room
-│   │   └── reducer.ts          # gameReducer() — all play rules
+│   │   ├── reducer.ts          # gameReducer() — all play rules
+│   │   └── save.ts             # versioned localStorage saves: autosave, restore, room codes, corruption handling
 │   └── ai/                     # server-only
 │       ├── schema.ts           # Zod RoomText schema + JSON schema for Gemini
 │       ├── prompt.ts           # buildPrompt(objects, solution roles), cleanObjectName()
@@ -376,3 +377,11 @@ pocket-dungeon/ (repo root = this project folder)
 - Exact structured-output config field for `@google/genai` (verify on the first real call).
 - `gemini-3.8-flash` latency and free-tier limits on the learner's key.
 - The fallback room's theme and objects (from `prd.md > Open Questions`). Decide during the build; doesn't block anything.
+
+## Persistence (added during the build)
+
+- **Where:** a single versioned localStorage key, `pocketDungeon.saves` = `{ version: 1, current, rooms: { [roomCode]: SavedAdventure } }`, keeping the 8 most recent rooms. There's no backend and no secrets: a save holds only the room the browser already received, the game state, the dials, the relics, and the ending stats.
+- **When:** after every state change in `/play` (effect on game, dials, stats). It's read only after mount, so server and client HTML match.
+- **Routing:** `/play?room=CODE` resumes that room, `/play?new` starts fresh, and `/play` resumes the current save if there is one. The URL is updated with `history.replaceState`, so Back from a room goes to the page before `/play`, never to a half-state, and nothing ever triggers generation except the Enter button.
+- **Validation:** a zod shape check, plus puzzle-consistency checks (code = digits in order, distinct roles). Unreadable or wrong-version files are cleared; individual bad rooms are dropped. Blocked or full storage degrades to an unsaved but playable game.
+

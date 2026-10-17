@@ -101,7 +101,7 @@ Source: `scope.md > The Unique Kernel` (the handoff).
 - **Generation or validation failure:** an in-world "disturbance in the dungeon's magic" screen explains the reason in plain words (busy/rate-limited, temporarily unavailable, the room didn't hold together, or the storyteller can't be reached) and offers Retry, Enter the classic room, or Change objects. The player is never stuck. *(Changed at the learner's request during the build.)*
 - **First moments in the room:** the inventory and journal are empty, and the hint button already works.
 - **Wrong item use or wrong code:** a playful response, no penalty, no lost progress.
-- **Persistence:** nothing persists. Refreshing or leaving loses the current room. *(Confirmed, consistent with scope's "no database or saved rooms.")*
+- **Persistence:** each adventure autosaves in this browser (localStorage) after every action: the generated room and its solution, inventory, clues, the open box, hints used, the machine's dials, and the ending. Refresh, Back, or returning later restores it exactly, without regenerating anything. The landing page offers Continue Adventure / New Adventure, or shows the escaped status. *(Added at the learner's request during the build; replaces "nothing persists".)*
 
 ## Product Decisions
 
@@ -129,6 +129,7 @@ Source: `scope.md > The Unique Kernel` (the handoff).
 - An escape screen with a display-only room code.
 
 ## Deferred From the POC
+- **Cross-device room codes.** Room codes now reopen a saved room in the same browser. Sharing a room with another device would need the room stored online.
 - **Seed-based room codes that recreate a room.** AI output isn't reproducible from a seed, so this would need the room encoded into the code or stored somewhere (`scope.md > Later`).
 - **Saving or resuming a room.** This would need storage, and it isn't needed to prove the kernel.
 

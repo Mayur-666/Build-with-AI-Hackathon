@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AdventureActions } from "@/components/AdventureActions";
 import { ArchedWindow, Door, HangingLamp, Pedestal, Shelf, SideTable } from "@/components/room/SceneArt";
 
 export const metadata: Metadata = {
@@ -38,7 +39,7 @@ const FIREFLIES = [
 function PlayNow({ className = "" }: { className?: string }) {
   return (
     <Link
-      href="/play"
+      href="/play?new"
       className={`brass inline-flex items-center gap-2 rounded-full px-8 py-3 text-lg font-extrabold tracking-wide transition hover:scale-105 hover:shadow-[0_0_30px_rgba(242,193,78,0.6)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold ${className}`}
     >
       Play Now <span aria-hidden>→</span>
@@ -111,12 +112,7 @@ export default function Landing() {
               Name any three objects. By moonlight, they become a strange little room full of riddles, and you&apos;ll have to
               think your way out.
             </p>
-            <div className="flex flex-wrap items-center gap-5">
-              <PlayNow />
-              <a href="#how" className="font-storybook text-lg text-candle/80 underline-offset-4 hover:text-candle hover:underline">
-                How it works
-              </a>
-            </div>
+            <AdventureActions />
           </div>
 
           <div className="relative">

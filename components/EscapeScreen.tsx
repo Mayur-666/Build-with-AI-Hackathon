@@ -91,13 +91,18 @@ export function EscapeScreen({ room, stats, onNewRoom, onSameObjects }: Props) {
 
       <div className="brass relative flex items-center gap-4 rounded-2xl px-5 py-3">
         <div className="text-left">
-          <p className="font-storybook text-sm">Room code</p>
+          <p className="font-storybook text-sm">Room code · saved in this browser</p>
           <p className="font-mono text-2xl font-bold tracking-[0.2em]">{room.roomCode}</p>
         </div>
         <button onClick={copy} className="rounded-full bg-sepia px-3 py-1.5 text-sm font-bold text-candle hover:bg-[#5a3e24]">
           {copied ? "Copied ✓" : "Copy"}
         </button>
       </div>
+
+      <p className="relative -mt-2 max-w-md text-xs text-ink/60">
+        Enter this code at the moonlit gate to revisit this room&apos;s ending in this browser. It isn&apos;t shared online, so it
+        won&apos;t open on another device.
+      </p>
 
       <div className="relative flex flex-col items-center gap-3 sm:flex-row">
         <button onClick={onSameObjects} className="brass rounded-full px-6 py-3 font-extrabold transition hover:scale-105">

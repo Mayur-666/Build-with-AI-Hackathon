@@ -32,9 +32,11 @@ export function LeaveRoom({ onLeave }: { onLeave: () => void }) {
               🕯️
             </span>
             <h2 id="leave-title" className="mt-2 text-2xl text-[#6b3a14]">
-              Abandon this room?
+              Step out of this room?
             </h2>
-            <p className="mt-1">The candle will gutter out and this room will be forgotten. Your relics will wait for you.</p>
+            <p className="mt-1">
+              Your progress is saved in this browser. Come back any time from the moonlit gate, or with this room&apos;s code.
+            </p>
             <div className="mt-5 flex justify-center gap-3">
               <button ref={stayRef} onClick={() => setAsking(false)} className="brass rounded-full px-5 py-2 font-bold">
                 Stay a while

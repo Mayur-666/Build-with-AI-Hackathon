@@ -7,7 +7,7 @@ import { Pedestal } from "@/components/room/SceneArt";
 export const MAX_OBJECT_LENGTH = 40;
 
 type Trio = [string, string, string];
-type Props = { onGenerate: (objects: Trio) => void; initial?: Trio };
+type Props = { onGenerate: (objects: Trio) => void; initial?: Trio; notice?: string | null };
 
 const RELICS = ["First relic", "Second relic", "Third relic"];
 const PLACEHOLDERS: Trio = ["a rubber duck", "a toaster", "a tiny moon"];
@@ -27,7 +27,7 @@ function roll(): Trio {
 }
 
 /** "Prepare your adventure": place three relics on their pedestals, then enter. */
-export function StartScreen({ onGenerate, initial }: Props) {
+export function StartScreen({ onGenerate, initial, notice }: Props) {
   const [objects, setObjects] = useState<Trio>(initial ?? ["", "", ""]);
   const [rolling, setRolling] = useState(false);
   const filled = objects.filter((o) => o.trim()).length;
@@ -52,6 +52,11 @@ export function StartScreen({ onGenerate, initial }: Props) {
         ← Back to the moonlit gate
       </Link>
 
+      {notice && (
+        <p role="status" className="parchment relative rounded-xl px-4 py-2 text-sm">
+          🕯️ {notice}
+        </p>
+      )}
       <header className="relative text-center">
         <p className="font-storybook text-lg italic text-candle/80">Prepare your adventure</p>
         <h1 className="text-5xl text-gold drop-shadow-[0_0_20px_rgba(242,193,78,0.35)] sm:text-6xl">Choose three relics</h1>

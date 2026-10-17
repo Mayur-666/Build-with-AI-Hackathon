@@ -8,6 +8,9 @@ type Props = {
   /** Bumps on every wrong attempt so the machine can shake. */
   wrongAttempts: number;
   feedback: string | null;
+  /** The dials' current setting (saved with the adventure). */
+  digits: [number, number, number];
+  onDigitsChange: (digits: [number, number, number]) => void;
 };
 
 /**
@@ -15,8 +18,8 @@ type Props = {
  * Mouse/touch: the arrows. Keyboard: ↑/↓ turn the focused dial, digits set it and move on,
  * ←/→ switch dials, Enter pulls the lever, Esc steps back.
  */
-export function CodeMachine({ onSubmit, onClose, wrongAttempts, feedback }: Props) {
-  const [digits, setDigits] = useState([0, 0, 0]);
+export function CodeMachine({ onSubmit, onClose, wrongAttempts, feedback, digits, onDigitsChange }: Props) {
+  const setDigits = (f: (d: [number, number, number]) => number[]) => onDigitsChange(f(digits) as [number, number, number]);
   const [turned, setTurned] = useState<number | null>(null);
   const dialRefs = useRef<(HTMLDivElement | null)[]>([]);
 
