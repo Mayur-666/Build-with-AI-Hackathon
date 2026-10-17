@@ -22,7 +22,7 @@ export function ClueJournal({ entries }: { entries: JournalEntry[] }) {
       <button
         onClick={() => setOpen(true)}
         aria-label={`Clue journal (${entries.length} ${entries.length === 1 ? "clue" : "clues"})`}
-        className={`satchel relative grid h-14 w-14 place-items-center rounded-2xl text-3xl transition hover:scale-105 ${
+        className={`hud-tool relative grid place-items-center rounded-xl transition hover:scale-105 hover:bg-white/5 ${
           fresh ? "sparkle-in" : ""
         }`}
       >

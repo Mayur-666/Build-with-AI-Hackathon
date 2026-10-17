@@ -10,14 +10,14 @@ export function HintButton({ level, onHint }: Props) {
       onClick={onHint}
       aria-label={label}
       title="Ask the owl for a hint"
-      className="satchel relative grid h-14 w-14 place-items-center rounded-2xl text-3xl transition hover:scale-105"
+      className="hud-tool relative grid place-items-center rounded-xl transition hover:scale-105 hover:bg-white/5"
     >
       <span aria-hidden>🦉</span>
-      <span className="absolute -bottom-1.5 left-1/2 flex -translate-x-1/2 gap-1" aria-hidden>
+      <span className="absolute -bottom-1 left-1/2 flex -translate-x-1/2 gap-1" aria-hidden>
         {[1, 2, 3].map((n) => (
           <span
             key={n}
-            className={`h-2 w-2 rounded-full border border-[#2c1a0e] ${n <= level ? "bg-gold shadow-[0_0_6px_rgba(242,193,78,0.9)]" : "bg-[#3a2416]"}`}
+            className={`h-1.5 w-1.5 rounded-full border border-[#2c1a0e] ${n <= level ? "bg-gold shadow-[0_0_6px_rgba(242,193,78,0.9)]" : "bg-[#3a2416]"}`}
           />
         ))}
       </span>

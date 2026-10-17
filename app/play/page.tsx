@@ -440,31 +440,32 @@ export default function GameShell() {
         <div className="message-scroll">
           <InspectPanel message={shown} offered={p.offered.map((id) => ({ id, ...def.items[id] }))} onTake={(item) => act({ type: "TAKE", item })} />
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3">
-          <Inventory
-            items={items}
-            selected={p.selectedItem}
-            onSelect={(item) => act({ type: "SELECT_ITEM", item })}
-            dragHandlers={handlersFor}
-            dragging={drag?.item.id ?? null}
-            fresh={freshItem}
-          />
-          <div className="ml-auto flex items-center gap-2">
-            <HintButton level={revealedHintLevel(def, p)} onHint={() => act({ type: "REQUEST_HINT" })} />
-            <ClueJournal entries={p.journal.map((id) => ({ id, text: def.clues[id] }))} />
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 lg:justify-start">
-          <button onClick={() => openHub(true)} className="font-storybook text-sm text-candle/60 underline-offset-4 hover:text-candle hover:underline">
-            Leave this room
+        {/* One HUD strip: satchel slots, then the owl and the journal. */}
+        <Inventory
+          items={items}
+          selected={p.selectedItem}
+          onSelect={(item) => act({ type: "SELECT_ITEM", item })}
+          dragHandlers={handlersFor}
+          dragging={drag?.item.id ?? null}
+          fresh={freshItem}
+        >
+          <HintButton level={revealedHintLevel(def, p)} onHint={() => act({ type: "REQUEST_HINT" })} />
+          <ClueJournal entries={p.journal.map((id) => ({ id, text: def.clues[id] }))} />
+        </Inventory>
+        {/* Room controls on one line: leave, restart, save code, sound. */}
+        <div className="flex items-center gap-x-4 gap-y-1">
+          <button onClick={() => openHub(true)} className="font-storybook whitespace-nowrap text-sm text-candle/60 underline-offset-4 hover:text-candle hover:underline">
+            Leave room
           </button>
-          <button onClick={() => setConfirmRestart(true)} className="font-storybook text-sm text-candle/60 underline-offset-4 hover:text-candle hover:underline">
-            Restart room
+          <button onClick={() => setConfirmRestart(true)} className="font-storybook whitespace-nowrap text-sm text-candle/60 underline-offset-4 hover:text-candle hover:underline">
+            Restart
           </button>
-          <span className="font-mono text-xs tracking-wider text-ink/40" title="This playthrough's save code (this browser only)">
+          <span className="truncate font-mono text-xs tracking-wider text-ink/40" title="This playthrough's save code (this browser only)">
             {session.saveId}
           </span>
-          <SoundControls variant="inline" />
+          <div className="ml-auto">
+            <SoundControls variant="inline" />
+          </div>
         </div>
       </aside>
 

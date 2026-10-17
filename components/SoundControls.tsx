@@ -5,10 +5,10 @@ import { sound, useSound } from "@/lib/audio";
 /** Two small toggles: sound effects and music. Both start off. "inline" sits in the room sidebar. */
 export function SoundControls({ variant = "fixed" }: { variant?: "fixed" | "inline" }) {
   const prefs = useSound();
-  const base = "satchel grid h-10 w-10 place-items-center rounded-full text-lg transition hover:scale-105";
+  const base = `satchel grid place-items-center rounded-full transition hover:scale-105 ${variant === "inline" ? "h-8 w-8 text-sm" : "h-10 w-10 text-lg"}`;
   return (
     <div
-      className={variant === "fixed" ? "sound-fixed absolute right-3 top-3 z-50 flex gap-2 sm:fixed" : "flex gap-2"}
+      className={variant === "fixed" ? "sound-fixed absolute right-3 top-3 z-50 flex gap-2 sm:fixed" : "flex gap-1.5"}
       role="group"
       aria-label="Sound"
     >

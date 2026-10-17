@@ -24,7 +24,7 @@ const DIFFICULTY: Record<Difficulty, { label: string; moons: string }> = {
 };
 
 /** The little illustration on each room card: the room's own props, on its own backdrop. */
-function CardArt({ def }: { def: AdventureDef }) {
+export function CardArt({ def }: { def: AdventureDef }) {
   const props = def.hotspots.filter((h) => h.art === "emoji").slice(0, 4);
   return (
     <div className={`card-art backdrop-${def.backdrop}`} aria-hidden>
