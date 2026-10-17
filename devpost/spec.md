@@ -109,7 +109,7 @@ Carried from `prd.md > Look and Feel` and `scope.md > Inspiration & Identity`.
 ### Server
 
 #### `POST /api/generate-room` (route handler)
-Takes `{ objects: string[3] }`, then trims each and caps it at 40 characters (rejecting empty ones with a 400). It runs createSolution → generateRoomText → parse → validate (retrying once) → fillRoom, and returns `{ room: Room, usedFallback: boolean }`. On any Gemini error, timeout (~20s), quota error, or second validation failure, it returns the fallback room with `usedFallback: true` and never an error page. It sets `export const maxDuration = 30` (verify against the Vercel plan).
+Takes `{ objects: string[3] }`, then trims each and caps it at 40 characters (rejecting empty ones with a 400). It runs createSolution → generateRoomText → parse → validate (retrying once) → fillRoom, and returns `{ room: Room, usedFallback: boolean }`. On any Gemini error, timeout (25s per attempt), quota error, or second validation failure, it returns the fallback room with `usedFallback: true` and never an error page. It sets `export const maxDuration = 60`. The pipeline itself lives in `lib/ai/generateRoom.ts`, because Next.js route files may only export handlers and config. A dev-only `forceFallback` body flag (sent when the page URL has `?fallback`) exercises the fallback path on purpose.
 PRD ref: `prd.md > Room Generation and Validation`, `prd.md > States and Boundaries`.
 
 #### Gemini client (`lib/ai/gemini.ts`)
@@ -302,7 +302,8 @@ pocket-dungeon/ (repo root = this project folder)
 │   │   └── reducer.ts          # gameReducer() — all play rules
 │   └── ai/                     # server-only
 │       ├── schema.ts           # Zod RoomText schema + JSON schema for Gemini
-│       ├── prompt.ts           # buildPrompt(objects, solution roles)
+│       ├── prompt.ts           # buildPrompt(objects, solution roles), cleanObjectName()
+│       ├── generateRoom.ts     # pipeline: solution → Gemini → parse → validate → retry → fill → fallback
 │       └── gemini.ts           # generateRoomText() via @google/genai
 ├── tests/
 │   ├── solution.test.ts

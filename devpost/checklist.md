@@ -19,7 +19,7 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Learner check: Run `npm run dev`, open http://localhost:3000, type any three objects, and play the classic room all the way out. Try a wrong code first. Does the chain feel fair and logical?
   Commit: `Playable classic room with engine-picked solution`
 
-- [ ] **2. Gemini builds a room around your three objects**
+- [x] **2. Gemini builds a room around your three objects**
   Becomes usable: Generate now calls `/api/generate-room`, which picks the solution, has Gemini write the room around *your* objects with placeholders, validates it (retrying once), fills in the facts, and returns it. If anything fails, you get the classic room. A simple loading message shows while it works.
   Why now: This is the AI half of the kernel and the riskiest unknown (the SDK's structured-output config, latency, how often validation passes). The learner asked to test real Gemini responses and the fallback path *before* spending time on visuals.
   PRD ref: `prd.md > The Core Journey` (steps 2–4), `prd.md > Room Generation and Validation`, `prd.md > States and Boundaries`
@@ -81,3 +81,11 @@ Reflection:
 Activity mode:
 
 ## Revisions
+- Structured output confirmed as planned: `ai.models.generateContent` with `responseMimeType: "application/json"` + `responseJsonSchema` (from `z.toJSONSchema`, `$schema` stripped) works on `gemini-3.8-flash` with `thinkingLevel: LOW`. Real rooms took 10–15s, and all 7 live test rooms passed validation on the first attempt.
+- Per-attempt timeout raised to 25s and `maxDuration` to 60 — measured latency (up to ~15s) made the planned ~20s/30s too tight for a retry.
+- Pipeline moved from `route.ts` into `lib/ai/generateRoom.ts` — Next.js route files may only export handlers/config, and a separate module is unit-testable with a fake Gemini.
+- Gemini's schema omits object names; the engine supplies the player's (cleaned) names — names are facts, so the AI can't rename them.
+- API/network errors fall back immediately without a retry; only bad JSON, schema mismatch, or validator rejection retry — an auth or quota error won't fix itself on retry.
+- The engine now inserts "the" before name placeholders and capitalizes at sentence starts (`nounPhrase` in `fill.ts`) — live rooms showed Gemini writing "observe toaster" even when told to add articles; the engine owning facts now also owns that grammar.
+- Next.js 16 allows only one `next dev` per project folder — if a dev server is already running, use it rather than starting another.
+

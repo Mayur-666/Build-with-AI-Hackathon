@@ -10,15 +10,32 @@ export function makeRoomCode(firstObjectName: string, rng: () => number = Math.r
   return `${prefix}-${suffix}`;
 }
 
+const DETERMINER = /\b(the|a|an|your|my|this|that|its|their)\s+$/i;
+
+/**
+ * Insert an object name where a placeholder was, as a grammatical noun phrase:
+ * "observe {first}" → "observe the toaster"; "the {first}" stays "the toaster";
+ * possessive names ("grandma's dentures") get no article; sentence starts are capitalized.
+ */
+export function nounPhrase(name: string, before: string): string {
+  const needsArticle = !DETERMINER.test(before) && !/'s\b/i.test(name);
+  const phrase = needsArticle ? `the ${name}` : name;
+  const sentenceStart = /(^|[.!?:]\s*["'“‘]?|^["'“‘])\s*$/.test(before);
+  return sentenceStart ? phrase[0].toUpperCase() + phrase.slice(1) : phrase;
+}
+
 /** Replace name placeholders in any text. {digit} is handled per object. */
 function fillNames(text: string, room: RoomText, solution: Solution): string {
-  const name = (id: ObjectId) => room.objects[id].name;
-  return text
-    .replaceAll("{keyHolder}", name(solution.keyHolder))
-    .replaceAll("{clueHolder}", name(solution.clueHolder))
-    .replaceAll("{first}", name(solution.order[0]))
-    .replaceAll("{second}", name(solution.order[1]))
-    .replaceAll("{third}", name(solution.order[2]));
+  const ids: Record<string, ObjectId> = {
+    keyHolder: solution.keyHolder,
+    clueHolder: solution.clueHolder,
+    first: solution.order[0],
+    second: solution.order[1],
+    third: solution.order[2],
+  };
+  return text.replace(/\{(keyHolder|clueHolder|first|second|third)\}/g, (_m, key: string, offset: number) =>
+    nounPhrase(room.objects[ids[key]].name, text.slice(0, offset)),
+  );
 }
 
 /**

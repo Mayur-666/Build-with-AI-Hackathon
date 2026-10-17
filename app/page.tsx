@@ -12,11 +12,28 @@ import { buildFallbackRoom } from "@/lib/game/fallbackRoom";
 import { gameReducer, initialGameState } from "@/lib/game/reducer";
 import type { GameAction, GameState, HotspotId, Room } from "@/lib/game/types";
 
-type Screen = "start" | "room";
+type Screen = "start" | "loading" | "room";
+
+async function requestRoom(objects: [string, string, string]): Promise<{ room: Room; usedFallback: boolean }> {
+  const forceFallback = new URLSearchParams(window.location.search).has("fallback");
+  try {
+    const res = await fetch("/api/generate-room", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ objects, forceFallback }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch {
+    // Server unreachable: the classic room still works entirely in the browser.
+    return { room: buildFallbackRoom(), usedFallback: true };
+  }
+}
 
 /** Holds the current screen and runs the game reducer for the active room. */
 export default function GameShell() {
   const [screen, setScreen] = useState<Screen>("start");
+  const [usedFallback, setUsedFallback] = useState(false);
   const [game, dispatch] = useReducer(
     (state: GameState | null, action: GameAction | { type: "LOAD"; room: Room } | { type: "RESET" }) => {
       if (action.type === "LOAD") return initialGameState(action.room);
@@ -26,11 +43,21 @@ export default function GameShell() {
     null,
   );
 
-  const startRoom = () => {
-    // Slice 1: always the classic room. Slice 2 asks Gemini first.
-    dispatch({ type: "LOAD", room: buildFallbackRoom() });
+  const startRoom = async (objects: [string, string, string]) => {
+    setScreen("loading");
+    const result = await requestRoom(objects);
+    dispatch({ type: "LOAD", room: result.room });
+    setUsedFallback(result.usedFallback);
     setScreen("room");
   };
+
+  if (screen === "loading") {
+    return (
+      <main className="flex min-h-screen items-center justify-center px-4">
+        <p className="animate-pulse text-xl text-gold">Building your room…</p>
+      </main>
+    );
+  }
 
   if (screen === "start" || !game) return <StartScreen onGenerate={startRoom} />;
 
@@ -54,6 +81,10 @@ export default function GameShell() {
       <header>
         <h1 className="text-3xl text-gold">{game.room.title}</h1>
         <p className="text-ink/70">{game.room.theme}</p>
+        {usedFallback && (
+          <p className="mt-2 text-sm text-candle">The dungeon got its wires crossed, so here&apos;s a classic room instead.</p>
+        )}
+        <p className="mt-2 text-ink/90">{game.room.intro}</p>
       </header>
       <RoomScene state={game} onHotspot={onHotspot} />
       {game.machineOpen && (

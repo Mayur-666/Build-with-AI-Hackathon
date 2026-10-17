@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FALLBACK_ROOM_TEXT } from "../lib/game/fallbackRoom";
-import { fillRoom, makeRoomCode } from "../lib/game/fill";
+import { fillRoom, makeRoomCode, nounPhrase } from "../lib/game/fill";
 import type { Solution } from "../lib/game/types";
 
 const solution: Solution = {
@@ -39,6 +39,24 @@ describe("fillRoom", () => {
   it("attaches the solution and a room code", () => {
     expect(room.solution.code).toBe("147");
     expect(room.roomCode).toMatch(/^[A-Z]{1,6}-[A-Z2-9]{4}$/);
+  });
+});
+
+describe("nounPhrase", () => {
+  it("adds 'the' when the AI left it out", () => {
+    expect(nounPhrase("toaster", "First observe ")).toBe("the toaster");
+  });
+  it("keeps an article the AI already wrote", () => {
+    expect(nounPhrase("toaster", "inside the ")).toBe("toaster");
+    expect(nounPhrase("toaster", "look at your ")).toBe("toaster");
+  });
+  it("leaves possessive names alone", () => {
+    expect(nounPhrase("grandma's dentures", "then ")).toBe("grandma's dentures");
+  });
+  it("capitalizes at the start of a sentence", () => {
+    expect(nounPhrase("tiny moon", "")).toBe("The tiny moon");
+    expect(nounPhrase("tiny moon", "It hums. ")).toBe("The tiny moon");
+    expect(nounPhrase("tiny moon", 'It reads: "')).toBe("The tiny moon");
   });
 });
 
