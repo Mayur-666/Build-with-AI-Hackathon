@@ -70,6 +70,35 @@ describe("gameReducer — the fixed puzzle chain", () => {
     expect(s.message?.lines).toEqual([start.room.wrongItemLine]);
   });
 
+  it("dropping the key on the box opens it, exactly like click-to-use", () => {
+    const start = freshGame();
+    const { keyHolder } = start.room.solution;
+    let s = play(start, [{ type: "INSPECT", target: keyHolder }, { type: "COLLECT_KEY" }]);
+    s = gameReducer(s, { type: "DROP_ITEM", item: "key", target: "box" });
+    expect(s.boxOpen).toBe(true);
+    expect(s.inventory).toEqual([]);
+    expect(s.journal.map((j) => j.id)).toContain("order");
+    expect(s.selectedItem).toBeNull();
+  });
+
+  it("dropping the key somewhere else gets the playful line and keeps the key", () => {
+    const start = freshGame();
+    const { keyHolder } = start.room.solution;
+    let s = play(start, [{ type: "INSPECT", target: keyHolder }, { type: "COLLECT_KEY" }]);
+    for (const target of ["exit", "machine", "a"] as const) {
+      s = gameReducer(s, { type: "DROP_ITEM", item: "key", target });
+      expect(s.boxOpen).toBe(false);
+      expect(s.inventory.map((i) => i.id)).toEqual(["key"]);
+      expect(s.message?.tone).toBe("wrong");
+      expect(s.message?.lines).toEqual([start.room.wrongItemLine]);
+    }
+  });
+
+  it("dropping an item you don't have does nothing", () => {
+    const start = freshGame();
+    expect(gameReducer(start, { type: "DROP_ITEM", item: "key", target: "box" })).toBe(start);
+  });
+
   it("the locked box and door only describe themselves", () => {
     const s = play(freshGame(), [{ type: "INSPECT", target: "box" }, { type: "INSPECT", target: "exit" }]);
     expect(s.boxOpen).toBe(false);

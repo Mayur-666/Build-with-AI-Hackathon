@@ -59,7 +59,7 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Learner check: Open http://localhost:3100. Does the landing page set the mood and make you want to play? Click Play Now, inspect objects, and confirm the text never spills sideways.
   Commit: `Landing page and wrapped narration`
 
-- [ ] **6. Drag items onto the room**
+- [x] **6. Drag items onto the room**
   Becomes usable: Pick up the key from the satchel and drag it onto things in the room, with mouse or touch. A target glows as you drag over it. Dropping on the box opens it; dropping elsewhere gets the playful wrong-item line. Click-to-hold-then-click still works as the accessible alternative.
   Why now: The learner asked for it right after the landing page. It reuses the existing `USE_ITEM` rule, so no puzzle logic changes.
   PRD ref: `prd.md > Inventory and Using Items`
@@ -136,4 +136,6 @@ Activity mode:
 - Added slices 5 (wrapped narration + landing page), 6 (drag-and-drop), and 8 (sound + extra game feel); hints → 7, themed screens → 9 — learner-requested scope after seeing the illustrated room. Each slice stays independently shippable. Two decisions are pending before slice 8: the door's role (proposal: the machine releases the door's missing piece) and which extra interactions to add.
 - Overflow fix done defensively: headless Edge (overlay scrollbars) couldn't reproduce the learner's horizontal scrollbar, so the narration area is `overflow-x: hidden` with inner padding, text uses `overflow-wrap: anywhere`, the take button wraps, and the discovery sparkle no longer scales the panel (scale/shake were the likely trigger with classic scrollbars). Measured: no horizontal overflow after inspecting every hotspot at 1000×733 and 390×844.
 - The game moved from `/` to `/play`; `/` is the landing page. The dev fallback flag is now `/play?fallback`.
+- Drag-and-drop uses a single `DROP_ITEM` reducer action (= hold + use) rather than two dispatches, so it's unit-testable and can't diverge from click-to-use. Targets don't reveal validity while hovering (that would give the puzzle away); every hotspot glows and the one under the item lifts and shows its plaque. A wrong drop wiggles the target. Verified with real mouse input at 1366×768 and real CDP touch events at 390×844.
+- Stopping a backgrounded `npx next dev` can leave its child Next.js process holding the port, and a dev server running across a page move served stale HTML (hydration error). Restarting the server fixed it, with no code change needed.
 

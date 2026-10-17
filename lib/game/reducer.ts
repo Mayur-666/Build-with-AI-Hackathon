@@ -111,6 +111,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "USE_ITEM":
       return applyItem(state, action.target);
 
+    case "DROP_ITEM": {
+      // Dragging is just "hold it, use it" in one gesture — same rules as clicking.
+      if (!state.inventory.some((i) => i.id === action.item)) return state;
+      return applyItem({ ...state, selectedItem: action.item }, action.target);
+    }
+
     case "ENTER_CODE": {
       if (action.code === room.solution.code) {
         return { ...state, escaped: true, machineOpen: false, message: null };

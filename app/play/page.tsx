@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { EscapeScreen } from "@/components/EscapeScreen";
 import { StartScreen } from "@/components/StartScreen";
 import { ClueJournal } from "@/components/room/ClueJournal";
@@ -8,6 +8,7 @@ import { CodeMachine } from "@/components/room/CodeMachine";
 import { InspectPanel } from "@/components/room/InspectPanel";
 import { Inventory } from "@/components/room/Inventory";
 import { RoomScene } from "@/components/room/RoomScene";
+import { useItemDrag } from "@/components/room/useItemDrag";
 import { buildFallbackRoom } from "@/lib/game/fallbackRoom";
 import { gameReducer, initialGameState } from "@/lib/game/reducer";
 import type { GameAction, GameState, HotspotId, Message, Room } from "@/lib/game/types";
@@ -32,6 +33,11 @@ async function requestRoom(objects: [string, string, string]): Promise<{ room: R
   }
 }
 
+function hotspotName(game: GameState, id: HotspotId): string {
+  if (id === "a" || id === "b" || id === "c") return `the ${game.room.objects[id].name}`;
+  return { machine: "the strange machine", box: "the box", exit: "the door" }[id];
+}
+
 /** Holds the current screen and runs the game reducer for the active room. */
 export default function GameShell() {
   const [screen, setScreen] = useState<Screen>("start");
@@ -44,6 +50,23 @@ export default function GameShell() {
     },
     null,
   );
+
+  // Which hotspot an item was last used on, so a wrong use can wiggle it.
+  const lastUseTarget = useRef<HotspotId | null>(null);
+  const [nope, setNope] = useState<HotspotId | null>(null);
+  const { drag, handlersFor } = useItemDrag((item, target) => {
+    lastUseTarget.current = target;
+    dispatch({ type: "DROP_ITEM", item, target });
+  });
+
+  useEffect(() => {
+    const m = game?.message;
+    if (!m || m.tone !== "wrong" || m.lines[0] !== game?.room.wrongItemLine || !lastUseTarget.current) return;
+    setNope(lastUseTarget.current);
+    lastUseTarget.current = null;
+    const t = setTimeout(() => setNope(null), 650);
+    return () => clearTimeout(t);
+  }, [game?.message, game?.room.wrongItemLine]);
 
   const startRoom = async (objects: [string, string, string]) => {
     setScreen("loading");
@@ -75,8 +98,10 @@ export default function GameShell() {
     );
   }
 
-  const onHotspot = (id: HotspotId) =>
+  const onHotspot = (id: HotspotId) => {
+    if (game.selectedItem) lastUseTarget.current = id;
     dispatch(game.selectedItem ? { type: "USE_ITEM", target: id } : { type: "INSPECT", target: id });
+  };
 
   const message: Message | null =
     game.message?.tone === "intro" && usedFallback
@@ -93,8 +118,8 @@ export default function GameShell() {
       </header>
 
       <div className="room-stage">
-        <RoomScene state={game} onHotspot={onHotspot} />
-        {heldItem && (
+        <RoomScene state={game} onHotspot={onHotspot} dragOver={drag ? drag.over : undefined} nope={nope} />
+        {heldItem && !drag && (
           <p className="pointer-events-none absolute left-1/2 top-3 z-30 -translate-x-1/2 rounded-full bg-[rgba(20,26,58,0.85)] px-4 py-1 text-sm text-candle shadow-lg">
             {heldItem.emoji} Use the {heldItem.name} on…
           </p>
@@ -124,10 +149,18 @@ export default function GameShell() {
             items={game.inventory}
             selected={game.selectedItem}
             onSelect={(item) => dispatch({ type: "SELECT_ITEM", item })}
+            dragHandlers={handlersFor}
+            dragging={drag?.item.id ?? null}
           />
           <ClueJournal entries={game.journal} />
         </div>
       </aside>
+      {drag && (
+        <div className="drag-ghost" style={{ left: drag.x, top: drag.y }} aria-hidden>
+          <span className="text-4xl">{drag.item.emoji}</span>
+          {drag.over && <span className="drag-hint">Use on {hotspotName(game, drag.over)}</span>}
+        </div>
+      )}
     </main>
   );
 }

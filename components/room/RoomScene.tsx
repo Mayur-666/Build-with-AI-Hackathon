@@ -5,7 +5,14 @@ import type { GameState, HotspotId, ObjectId } from "@/lib/game/types";
 import { Hotspot } from "./Hotspot";
 import { ArchedWindow, Door, HangingLamp, Machine, Pedestal, Shelf, SideTable, VelvetBox } from "./SceneArt";
 
-type Props = { state: GameState; onHotspot: (id: HotspotId) => void };
+type Props = {
+  state: GameState;
+  onHotspot: (id: HotspotId) => void;
+  /** The hotspot an item is being dragged over, or undefined when nothing is being dragged. */
+  dragOver?: HotspotId | null;
+  /** The hotspot that just rejected an item (wiggles briefly). */
+  nope?: HotspotId | null;
+};
 
 const pct = (left: number, top: number, width: number, height: number): CSSProperties => ({
   left: `${left}%`,
@@ -32,10 +39,18 @@ const FIREFLIES = [
 ];
 
 /** The one fixed storybook room. Every clickable thing is a <Hotspot>. */
-export function RoomScene({ state, onHotspot }: Props) {
+export function RoomScene({ state, onHotspot, dragOver, nope }: Props) {
   const { room } = state;
   const using = state.selectedItem !== null;
   const unvisited = (id: HotspotId) => !state.inspected.includes(id);
+  const common = (id: HotspotId) => ({
+    id,
+    unvisited: unvisited(id),
+    using,
+    drop: dragOver === undefined ? null : dragOver === id ? ("over" as const) : ("ready" as const),
+    nope: nope === id,
+    onClick: () => onHotspot(id),
+  });
   const verb = (what: string) => (using ? `Use the ${state.inventory[0]?.name ?? "item"} on the ${what}` : `Inspect the ${what}`);
 
   return (
@@ -67,9 +82,7 @@ export function RoomScene({ state, onHotspot }: Props) {
         tag="The door"
         tagMode="hover"
         style={pct(41.5, 12.5, 17, 54)}
-        unvisited={unvisited("exit")}
-        using={using}
-        onClick={() => onHotspot("exit")}
+        {...common("exit")}
       >
         <Door />
       </Hotspot>
@@ -82,9 +95,7 @@ export function RoomScene({ state, onHotspot }: Props) {
             label={verb(obj.name)}
             tag={obj.name}
             style={CURIO_SPOTS[id]}
-            unvisited={unvisited(id)}
-            using={using}
-            onClick={() => onHotspot(id)}
+            {...common(id)}
           >
             <span className="curio-glow" />
             <span className="curio-emoji absolute bottom-0 left-1/2 -translate-x-1/2">{obj.emoji}</span>
@@ -97,9 +108,7 @@ export function RoomScene({ state, onHotspot }: Props) {
         tag="Strange machine"
         tagMode="hover"
         style={pct(77, 22, 19, 60)}
-        unvisited={unvisited("machine")}
-        using={using}
-        onClick={() => onHotspot("machine")}
+        {...common("machine")}
       >
         <Machine />
       </Hotspot>
@@ -109,9 +118,7 @@ export function RoomScene({ state, onHotspot }: Props) {
         tag={state.boxOpen ? "Open box" : "Locked box"}
         tagMode="hover"
         style={pct(40, 71, 14, 16)}
-        unvisited={unvisited("box")}
-        using={using}
-        onClick={() => onHotspot("box")}
+        {...common("box")}
       >
         <VelvetBox open={state.boxOpen} />
       </Hotspot>

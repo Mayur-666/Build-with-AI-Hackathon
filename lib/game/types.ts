@@ -76,6 +76,7 @@ export type GameAction =
   | { type: "COLLECT_KEY" }
   | { type: "SELECT_ITEM"; item: Item["id"] | null }
   | { type: "USE_ITEM"; target: HotspotId }
+  | { type: "DROP_ITEM"; item: Item["id"]; target: HotspotId }
   | { type: "ENTER_CODE"; code: string }
   | { type: "CLOSE_MACHINE" }
   | { type: "REQUEST_HINT" };
