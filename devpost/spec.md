@@ -385,3 +385,21 @@ pocket-dungeon/ (repo root = this project folder)
 - **Routing:** `/play?room=CODE` resumes that room, `/play?new` starts fresh, and `/play` resumes the current save if there is one. The URL is updated with `history.replaceState`, so Back from a room goes to the page before `/play`, never to a half-state, and nothing ever triggers generation except the Enter button.
 - **Validation:** a zod shape check, plus puzzle-consistency checks (code = digits in order, distinct roles). Unreadable or wrong-version files are cleared; individual bad rooms are dropped. Blocked or full storage degrades to an unsaved but playable game.
 
+## Adventure engine (added during the build)
+
+- **Data:** `AdventureDef` (`lib/engine/types.ts`) holds hotspots (art, position, plinth, size, visual `looks`), ordered `inspect` rules, per-item `use` rules, an optional `lock` (dials of any options, `answer`, optional `when`, `knowledge` clue ids, `solved` rule, `wrong` lines), conditional `hints`, `items`, `clues`, and a stored `solution`. Rules are `{ when?, say, tone?, do? }`; effects are offer/give/take/set flag/clue/escape.
+- **Rules:** `step(def, progress, action)` in `lib/engine/engine.ts` is pure and shared by every room. Progress is `{ flags, inventory, offered, taken, journal, inspected, selectedItem, openLock, dials, wrongAttempts, hintsUsed, hint, message, escaped }`.
+- **Checks:** `validateAdventure` (`lib/engine/validate.ts`) checks the zod schema, references, that answers are on the dials, that an escape exists, that the stored solution wins, that `solve()` finds a way out (entering answers only once their knowledge clues are known), and that **no lock can be bypassed**. Tests also prove no dead ends via `reachable()`.
+- **Gemini and classic rooms:** `fromChainRoom(room)` compiles the filled AI room into an `AdventureDef` with identical text and facts. The door finale: the machine sets `doorUnlocked`; inspecting the door escapes. Generated rooms are validated on the client before play; failure shows the disturbance screen.
+- **Original reducer:** `lib/game/reducer.ts` is kept only as the oracle for `tests/migration.test.ts`.
+
+## Catalogue (added during the build)
+
+- `lib/catalogue/rooms/{midnight-library,clockmakers-last-hour,sleeping-greenhouse}.json`, loaded by `lib/catalogue/index.ts`. Only rooms that pass `validateAdventure` are offered. Selecting one never calls Gemini.
+- Hub at `/play` (`components/AdventureHub.tsx`); `/play?create` for relics; `/play?save=PD-…` for a playthrough; `/play?room=<id>` continues the latest playthrough of a room or starts a catalogue room.
+- Save format v2 (`lib/engine/saves.ts`): `{ version: 2, current, plays: { [saveId]: Playthrough }, rooms: { [customRoomId]: AdventureDef } }`, keeping 12 playthroughs; custom rooms nobody plays are dropped.
+
+## Sound (added during the build)
+
+- `lib/audio.ts`: Web Audio synthesis for effects and a music-box ambience. Preferences are in `pocketDungeon.sound`, default off; the AudioContext is created only from a click. `components/SoundControls.tsx` shows the toggles via `app/play/layout.tsx`.
+

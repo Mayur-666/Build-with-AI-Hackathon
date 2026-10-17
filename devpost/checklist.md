@@ -99,7 +99,7 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Learner check: Play from the landing page to escape. Then force a rate-limit fallback with `/play?fallback=rate_limited` and try both recovery options.
   Commit: `Gamify every screen and state`
 
-- [ ] **10. Sound and extra game feel**
+- [x] **10. Sound and extra game feel** *(delivered by slices 12 and 15: the door finale and sound; the drag, poke, and lock interactions came earlier)*
   Becomes usable: Subtle sounds for inspecting, collecting, unlocking, a wrong code, and escaping, plus optional ambient music. Everything is off until the player turns sound on with a visible toggle. Includes a few extra interactions beyond clicking, to be agreed with the learner.
   Why now: The learner wants more game feel. It goes after hints so the core experience is complete first.
   PRD ref: `prd.md > Look and Feel`
@@ -118,6 +118,46 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Verify (mechanical): `tests/save.test.ts` (exact restore, no regenerated facts, restored game plays to the win, one record per code, resume by code, 8-room cap, completed ending + stats, missing/unreadable/outdated/partly broken/tampered saves, throwing storage, no secrets). Edge: progress → refresh → identical (code, title, key, clue, hint level, dial = 4) → Back → landing Continue card → Continue → same room → escape → refresh → same ending and stats → landing escaped card → bad code message → code opens room → unknown `?room=` notice → corrupted storage cleared gracefully; 1 generation request total, no console errors.
   Learner check: Play partway, refresh, press Back, then Continue. Finish, refresh on the ending, then reopen the room from the landing page with its code.
   Commit: `Autosave adventures in the browser; resume by room code`
+
+- [x] **12. A data-driven adventure engine, with the classic room migrated**
+  Becomes usable: Rooms are data (`AdventureDef`): hotspots with conditional descriptions, item-use rules, locks with any dials (digits, letters, times, symbols), conditional hints, and an explicit escape. One engine (`lib/engine/engine.ts`) runs every room. Gemini and classic rooms are compiled into it (`fromChainRoom`) with the same puzzle facts, plus the requested door finale: the machine releases the door's last lock, then the player opens the door.
+  Why now: The hard-coded reducer could only express one puzzle chain; the catalogue needs different logic.
+  PRD ref: `prd.md > The Core Journey`, `prd.md > The Combination Machine`
+  Spec ref: `spec.md > Adventure engine (added during the build)`
+  Build: `lib/engine/{types,engine,solve,validate,fromChainRoom}.ts`. The validator checks schema, references, the stored solution, the solver, and that no lock can be bypassed (the solver may only enter an answer once its `knowledge` clues are in the journal).
+  Verify (mechanical): `tests/engine.test.ts`, and `tests/migration.test.ts`, which runs the original reducer and the engine side by side on 40 random classic rooms with identical text and state at every step; the only difference is the new door step.
+  Learner check: Play the classic room; after the code, the door glows unlocked; click it to escape.
+  Commit: `Data-driven adventure engine with solver; classic room migrated with parity tests`
+
+- [x] **13. Per-playthrough saves on the engine**
+  Becomes usable: Room definitions and player progress are stored separately (catalogue rooms stay in JSON; custom rooms are stored once). Each playthrough has its own save ID (`PD-XXXXXX`, URL `/play?save=…`), so replaying never overwrites. Restart is confirmed and only resets that playthrough. Back/Forward re-route through `popstate`.
+  Why now: The catalogue and replays need playthroughs, not one save per room.
+  PRD ref: `prd.md > States and Boundaries`
+  Spec ref: `spec.md > Persistence (added during the build)`
+  Build: `lib/engine/saves.ts` (save format v2; v1 is treated as outdated and cleared), the rewritten `/play` page, `LockDialog`, and `ConfirmDialog`.
+  Verify (mechanical): `tests/saves.test.ts` (catalogue and custom restore, separate playthroughs, restart isolation, codes, endings, outdated/corrupt/tampered/version-bumped saves, throwing storage, no secrets). Edge `stage2` run: locked door, drag refusals, box, wrong/right code (door unlocks without escaping), refresh, door swing, ending refresh, play-again new save, Back to the earlier ending, cancelled and confirmed restart, the other playthrough untouched.
+  Learner check: Play a room twice; check both saves exist; restart one.
+  Commit: `Run the game on the engine: door finale, per-playthrough saves, restart`
+
+- [x] **14. Choose your adventure: three catalogue rooms**
+  Becomes usable: `/play` is a hub with two paths: **Explore rooms** (The Midnight Library: light, invisible ink, letter lock, key on the door; The Clockmaker's Last Hour: gear assembly, then a time lock that draws the door bolt; The Sleeping Greenhouse: item transformation, feeding, symbol reveals, a symbol lock that withers the vines) and **Create your own** (Gemini). Cards show difficulty and new / in-progress / escaped status, with Continue, Restart (confirmed), Play again, and See ending.
+  Why now: The learner asked for ready-made rooms that need no waiting, and distinct puzzle logic.
+  PRD ref: `prd.md > Screens and Layout`
+  Spec ref: `spec.md > Catalogue (added during the build)`
+  Build: `lib/catalogue/rooms/*.json`, `lib/catalogue/index.ts` (only validated rooms are offered), `components/AdventureHub.tsx`, and the disturbance screen's Explore prebuilt rooms exit.
+  Verify (mechanical): `tests/catalogue.test.ts` (validation, stable IDs, stored and solver wins, locked door, no bypass, knowledge-backed answers, **no dead ends from any reachable state**, invalid item use changes nothing, distinct lock kinds and win sequences). Edge `catalogue` run: all three rooms played through the UI (clicks, drags, keyboard dials) with 0 generation requests and no console errors.
+  Learner check: Play each catalogue room from the hub.
+  Commit: `Choose-your-adventure hub and three distinct catalogue rooms`
+
+- [x] **15. Sound and music, off until enabled**
+  Becomes usable: Synthesized (Web Audio, no files) effects for inspect, collect, discovery, unlock, wrong, locked, hint, dial ticks, and escape, with slight pitch variation and throttling. Optional music-box ambience. Visible toggles on every game screen; both off by default; the preference is remembered, but nothing plays until the player clicks.
+  Why now: The learner asked for game feel after the core loop worked.
+  PRD ref: `prd.md > Look and Feel`
+  Spec ref: `spec.md > Sound (added during the build)`
+  Build: `lib/audio.ts`, `components/SoundControls.tsx`, `app/play/layout.tsx`. Only player actions trigger sounds; restores are silent.
+  Verify (mechanical): Edge `sound` run with an instrumented AudioContext: 0 contexts/oscillators before enabling (while playing); sounds on interactions after; preference remembered but silent until a click after reload; music notes while on, none after off.
+  Learner check: Turn on sound effects and music and play a room.
+  Commit: `Synthesized sound effects and optional music, off until enabled`
 
 ## Hands-on Checkpoints
 
@@ -167,4 +207,7 @@ Activity mode:
 - Not done in this pass: sound and the extra interactions (slice 10, waiting on the learner's door/interaction decisions). The door-piece puzzle proposal is also undecided; the door now visibly opens but isn't a puzzle step.
 - Added slice 11 (persistence, learner request). The room code now identifies a save in this browser's localStorage. It reopens that room (in progress or finished) from the same browser only; nothing is uploaded, so it doesn't work on another device. Back from `/play` returns to the previous page because `/play` updates its URL with `replaceState`; generation only ever runs from the Enter button.
 - Test-script lesson: the landing page's decorative room peek also uses `.scene`, so e2e waits must target `.room-stage .scene` or the `/play` URL.
+- Slices 12–15 added at the learner's request (catalogue, engine, door role, sound). The door decision is resolved by the learner's spec: the machine (or each room's final lock) releases the door, and the player opens it.
+- Live Gemini during final verification: the primary model returned 503 (high demand), and the first fallback returned hints with invented placeholders, which the validator rejected; a later request hit 429 quota exhaustion, then a 25s timeout. Both requests used exactly two calls and showed the correct disturbance screen. The custom-room path was verified end to end with a validated room injected at the network layer, to avoid spending more quota.
+- Known gap: Gemini rooms all use the classic chain layout; only catalogue rooms have bespoke puzzle logic.
 

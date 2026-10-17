@@ -147,3 +147,12 @@ Source: `scope.md > The Unique Kernel` (the handoff).
 
 ## Open Questions
 - **Fallback room content.** One handwritten room built on the same chain. Its exact theme can be decided during the build. Doesn't block `4-spec`.
+
+## Added During the Build (learner requests)
+
+- **Two ways to play:** a "Choose your adventure" hub. Explore three hand-made rooms instantly (no AI wait), or create your own from three objects with Gemini.
+- **Catalogue rooms:** The Midnight Library (gentle), The Clockmaker's Last Hour (tricky), The Sleeping Greenhouse (devious), each with its own puzzle logic and lock type. Each room validates as solvable, with no bypasses and no dead ends.
+- **The door matters:** in every room the final lock (machine, cabinet, clock, guardian) releases the door, and the player opens it to escape, with an unlocking glow and a swinging door animation.
+- **Playthroughs:** every attempt has its own save code; restart is confirmed; Continue restores exactly; statuses show in the hub and on the landing page; nothing transfers between devices.
+- **Sound:** subtle effects and optional music, off until the player turns them on.
+

@@ -7,7 +7,7 @@ export function SoundControls() {
   const prefs = useSound();
   const base = "satchel grid h-10 w-10 place-items-center rounded-full text-lg transition hover:scale-105";
   return (
-    <div className="fixed right-3 top-3 z-50 flex gap-2" role="group" aria-label="Sound">
+    <div className="fixed bottom-3 right-3 z-50 flex gap-2 sm:bottom-auto sm:top-3" role="group" aria-label="Sound">
       <button
         onClick={() => sound.setSfx(!prefs.sfx)}
         aria-pressed={prefs.sfx}
