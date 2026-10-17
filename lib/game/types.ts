@@ -20,13 +20,16 @@ export type HintSet = [string, string, string];
 export type RoomObjectText = {
   name: string;
   emoji: string;
-  description: string; // contains {digit} exactly once
+  description: string; // contains {digit} exactly once, and the signature word
+  riddle: string; // how clues refer to this object, e.g. "the one that floats where nothing should"
+  signatureWord: string; // appears in this object's riddle and description, nowhere else
 };
 
 /**
  * Room text with placeholders. Written by Gemini (or by hand for the fallback).
  * Placeholders: {digit} (object descriptions only), {keyHolder}, {clueHolder},
- * {first}, {second}, {third}. The engine fills them with real values.
+ * {first}, {second}, {third}. The engine fills them with real values: in the key
+ * clue and the order clue, names become riddles; everywhere else, plain names.
  */
 export type RoomText = {
   title: string;

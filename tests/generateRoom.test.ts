@@ -13,9 +13,9 @@ function fakeGeminiRoom(): GeminiRoom {
     ...rest,
     intro: "A rubber duck, a toaster, and a tiny moon have been locked in together.",
     objects: {
-      a: { emoji: "🦆", description: objects.a.description },
-      b: { emoji: "🍞", description: objects.b.description },
-      c: { emoji: "🌙", description: objects.c.description },
+      a: { emoji: "🦆", description: objects.a.description, riddle: objects.a.riddle, signatureWord: objects.a.signatureWord },
+      b: { emoji: "🍞", description: objects.b.description, riddle: objects.b.riddle, signatureWord: objects.b.signatureWord },
+      c: { emoji: "🌙", description: objects.c.description, riddle: objects.c.riddle, signatureWord: objects.c.signatureWord },
     },
   };
 }
@@ -33,7 +33,8 @@ describe("generateRoom pipeline", () => {
     expect(result.room.objects.a.name).toBe("rubber duck");
     const { digits } = result.room.solution;
     expect(result.room.objects.b.description).toContain(String(digits.b));
-    expect(result.room.box.orderClue).toContain(result.room.objects[result.room.solution.order[0]].name);
+    expect(result.room.box.orderClue).toContain(result.room.objects[result.room.solution.order[0]].riddle.replace(/^the /, ""));
+    expect(result.room.box.orderClue).not.toContain("rubber duck");
   });
 
   it("retries once after an invalid room, then succeeds", async () => {

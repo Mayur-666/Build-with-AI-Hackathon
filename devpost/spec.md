@@ -137,6 +137,9 @@ PRD ref: `prd.md > Room Generation and Validation`, `scope.md > The Unique Kerne
 - `clueHolder.clueText` contains `{keyHolder}`.
 - `keyHolder.keyFoundText` exists.
 - `box.orderClue` contains `{first}`, `{second}`, `{third}`, each once and in that order.
+- **Riddles:** each object has a `riddle` and a `signatureWord`. The word appears in its own riddle and description and in no other object's riddle or description. The riddle contains no word of the object's own name.
+- `clueText` and `box.orderClue` contain no object name. They refer to objects only through placeholders, which are filled with riddles.
+- Hint levels 1–2 for `findKey` and `solveCode` contain no name placeholders and no object names. Level 3 of `findKey` contains `{keyHolder}`, and level 3 of `solveCode` contains `{first}`, `{second}`, `{third}`.
 - Hint text contains no `{digit}`, and code-step level 3 explains the method without containing the code.
 - No AI-written text contains a bare numeral (0–9), so a stray number can't mislead the player.
 - **The objects are woven into the story:** the `intro` mentions all three player object names (case-insensitive). This is a cheap yes/no proxy for "meaningfully connected." The real test is reading real rooms during the build.
@@ -145,7 +148,7 @@ PRD ref: `prd.md > Room Generation and Validation`, `scope.md > The Unique Kerne
 PRD ref: `prd.md > Room Generation and Validation`.
 
 #### Room filler (`lib/game/fill.ts`)
-`fillRoom(text, solution)` replaces the placeholders: `{digit}` per object, `{keyHolder}`, `{first}`/`{second}`/`{third}` with object names. It builds the final `Room` and generates the display-only `roomCode` (e.g. `MOON-7QX3`: the first object's name, uppercased and trimmed, plus 4 random characters).
+`fillRoom(text, solution)` replaces the placeholders: `{digit}` per object. In `clueText` and `box.orderClue`, name placeholders become the object's **riddle**. Everywhere else, including hints, they become the object's **name** (with an article via `nounPhrase`). It builds the final `Room` and generates the display-only `roomCode` (e.g. `MOON-7QX3`: the first object's name, uppercased and trimmed, plus 4 random characters).
 PRD ref: `prd.md > Room Generation and Validation`, `prd.md > Escape Screen`.
 
 #### Fallback room (`lib/game/fallbackRoom.ts`)
@@ -237,7 +240,7 @@ type Solution = {
 // What Gemini must return (Zod schema → JSON schema). Contains placeholders, no facts.
 type RoomText = {
   title: string; theme: string; intro: string;
-  objects: Record<ObjectId, { name: string; emoji: string; description: string /* has {digit} */ }>;
+  objects: Record<ObjectId, { name: string; emoji: string; description: string /* has {digit} */; riddle: string; signatureWord: string }>;
   clueText: string;          // from clueHolder; has {keyHolder}
   keyItem: { name: string; emoji: string };
   keyFoundText: string;

@@ -3,9 +3,15 @@ import type { RoomText } from "../game/types";
 
 const objectText = z.object({
   emoji: z.string().describe("One emoji that best depicts this object."),
+  signatureWord: z
+    .string()
+    .describe("One distinctive lowercase word naming this object's most noticeable trait or behaviour (e.g. 'floats'). Not a word from the object's name."),
   description: z
     .string()
-    .describe("Two or three whimsical sentences. Must contain the placeholder {digit} exactly once, shown as a visible number on or in the object."),
+    .describe("Two or three whimsical sentences. Must contain the placeholder {digit} exactly once, shown as a visible number on or in the object, and must use the signatureWord exactly as written."),
+  riddle: z
+    .string()
+    .describe("A short noun phrase starting with 'the' that identifies this object without naming it, using the signatureWord exactly as written (e.g. 'the one that floats where nothing should')."),
 });
 
 const threeHints = z.array(z.string()).min(3).max(3);
@@ -19,7 +25,7 @@ export const GeminiRoomSchema = z.object({
   theme: z.string().describe("One sentence capturing the room's strange situation."),
   intro: z.string().describe("Three or four sentences explaining why these three objects are here together and that the player must escape. Names all three objects exactly."),
   objects: z.object({ a: objectText, b: objectText, c: objectText }),
-  clueText: z.string().describe("The clue found inside the clue-holder. Must contain {keyHolder}."),
+  clueText: z.string().describe("The clue found inside the clue-holder. Must contain {keyHolder}, which the game replaces with the key-holder's riddle. Never names any object."),
   keyItem: z.object({
     name: z.string().describe("A small key or tool that opens the locked box, inspired by the objects."),
     emoji: z.string(),
@@ -32,7 +38,7 @@ export const GeminiRoomSchema = z.object({
   box: z.object({
     lockedText: z.string(),
     openText: z.string().describe("What happens as the key item opens the box."),
-    orderClue: z.string().describe("The note inside the box. Must contain {first}, {second}, {third} in that order, telling the player to read the objects' numbers in that order."),
+    orderClue: z.string().describe("The message inside the box. Must contain {first}, {second}, {third} in that order (the game replaces them with riddles), telling the player to read the objects' numbers in that order. Never names any object."),
   }),
   exit: z.object({ lockedText: z.string() }),
   wrongItemLine: z.string().describe("A short in-world line when an item is used on the wrong thing."),
@@ -62,7 +68,13 @@ export function safeEmoji(emoji: string): string {
 
 /** Merge Gemini's text with the player's own object names. */
 export function toRoomText(g: GeminiRoom, names: [string, string, string]): RoomText {
-  const obj = (o: GeminiRoom["objects"]["a"], name: string) => ({ name, emoji: safeEmoji(o.emoji), description: o.description });
+  const obj = (o: GeminiRoom["objects"]["a"], name: string) => ({
+    name,
+    emoji: safeEmoji(o.emoji),
+    description: o.description,
+    riddle: o.riddle.trim(),
+    signatureWord: o.signatureWord.trim().toLowerCase(),
+  });
   return {
     ...g,
     objects: { a: obj(g.objects.a, names[0]), b: obj(g.objects.b, names[1]), c: obj(g.objects.c, names[2]) },

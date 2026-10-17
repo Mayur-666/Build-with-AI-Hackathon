@@ -20,16 +20,22 @@ describe("fillRoom", () => {
     expect(room.objects.c.description).toContain("1");
   });
 
-  it("names the objects in the solution's reading order", () => {
+  it("describes the objects by riddle, in the solution's reading order", () => {
     const clue = room.box.orderClue;
-    const [first, second, third] = solution.order.map((id) => clue.indexOf(room.objects[id].name));
+    const [first, second, third] = solution.order.map((id) => clue.indexOf(room.objects[id].riddle.replace(/^the /, "")));
     expect(first).toBeGreaterThan(-1);
     expect(first).toBeLessThan(second);
     expect(second).toBeLessThan(third);
   });
 
-  it("points the clue at the key-holder", () => {
-    expect(room.clueText).toContain(room.objects.c.name);
+  it("points the clue at the key-holder by riddle, not name", () => {
+    expect(room.clueText).toContain("the one whose compass points to nowhere real");
+    expect(room.clueText).not.toContain(room.objects.c.name);
+  });
+
+  it("uses plain names in the final hints", () => {
+    expect(room.hints.findKey[2]).toContain("the moth-nibbled map");
+    expect(room.hints.solveCode[2]).toContain("the moth-nibbled map, then the brass lantern, then the sleepy teapot");
   });
 
   it("leaves no placeholders behind", () => {
@@ -53,6 +59,12 @@ describe("nounPhrase", () => {
   it("leaves possessive names alone", () => {
     expect(nounPhrase("grandma's dentures", "then ")).toBe("grandma's dentures");
   });
+  it("gives riddles an article even when they're possessive", () => {
+    expect(nounPhrase("the moon's twin", "inside ", { alwaysArticle: true })).toBe("the moon's twin");
+    expect(nounPhrase("one that floats", "First ", { alwaysArticle: true })).toBe("the one that floats");
+    expect(nounPhrase("the one that floats", "inside the ", { alwaysArticle: true })).toBe("one that floats");
+  });
+
   it("capitalizes at the start of a sentence", () => {
     expect(nounPhrase("tiny moon", "")).toBe("The tiny moon");
     expect(nounPhrase("tiny moon", "It hums. ")).toBe("The tiny moon");

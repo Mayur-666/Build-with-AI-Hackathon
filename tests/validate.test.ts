@@ -70,6 +70,63 @@ describe("validateRoomText", () => {
     expect(reasonsFor(room)).toContain("keyFoundText is empty");
   });
 
+  it("rejects a riddle missing its signature word", () => {
+    const room = good();
+    room.objects.a.riddle = "the one that glows";
+    expect(reasonsFor(room)).toContain('objects.a.riddle must contain its signature word "flickers"');
+  });
+
+  it("rejects a description missing its signature word", () => {
+    const room = good();
+    room.objects.b.description = "A round teapot, quiet as a mouse, stamped with {digit}.";
+    expect(reasonsFor(room)).toContain('objects.b.description must contain its signature word "snores"');
+  });
+
+  it("rejects a signature word shared with another object", () => {
+    const room = good();
+    room.objects.c.description += " Even the map snores a little.";
+    expect(reasonsFor(room)).toContain('signature word "snores" of object b also appears in object c');
+  });
+
+  it("rejects a multi-word signature", () => {
+    const room = good();
+    room.objects.a.signatureWord = "flickers brightly";
+    expect(reasonsFor(room)).toContain("objects.a.signatureWord must be a single word");
+  });
+
+  it("rejects a riddle that gives away the object's name", () => {
+    const room = good();
+    room.objects.b.riddle = "the teapot that snores";
+    expect(reasonsFor(room)).toContain('objects.b.riddle gives away its name ("teapot")');
+  });
+
+  it("rejects clues that name objects directly", () => {
+    const room = good();
+    room.clueText = "The key is inside {keyHolder}, next to the teapot.";
+    room.box.orderClue = "Read {first}, then {second}, then {third}, starting at the lantern.";
+    const reasons = reasonsFor(room);
+    expect(reasons).toContain('clueText names "sleepy teapot"');
+    expect(reasons).toContain('box.orderClue names "brass lantern"');
+  });
+
+  it("rejects early hints that name objects or use name placeholders", () => {
+    const room = good();
+    room.hints.findKey[0] = "Look at the lantern.";
+    room.hints.solveCode[1] = "Start with the {first}.";
+    const reasons = reasonsFor(room);
+    expect(reasons).toContain('hints.findKey[0] names "brass lantern"');
+    expect(reasons).toContain("hints.solveCode[1] must not use name placeholders");
+  });
+
+  it("requires the last hints to name the answer's objects", () => {
+    const room = good();
+    room.hints.findKey[2] = "Think harder about the note.";
+    room.hints.solveCode[2] = "Read the {first} and the {second}.";
+    const reasons = reasonsFor(room);
+    expect(reasons).toContain("hints.findKey[2] must contain {keyHolder}");
+    expect(reasons).toContain("hints.solveCode[2] must contain {first}, {second}, {third}");
+  });
+
   it("rejects an intro that leaves out a player object", () => {
     expect(reasonsFor(good(), [...names.slice(0, 2), "rubber duck"])).toContain('intro does not mention "rubber duck"');
   });

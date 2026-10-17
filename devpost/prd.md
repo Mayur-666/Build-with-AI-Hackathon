@@ -16,8 +16,8 @@ Source: `scope.md > What "Working" Looks Like`, `scope.md > The Core Loop`.
 3. **Validate.** The game checks the generated room against the solution before showing it. If generation or validation fails, the fallback room loads with a brief playful message.
 4. **Intro.** A short intro explains the strange situation the player is in.
 5. **Explore.** The player is in the room: their three objects, a strange machine, a locked box, and a locked exit. They click things to inspect them.
-6. **Find the clue and the key.** One object reveals a clue. Another holds a small key (or tool), which the player collects into their inventory.
-7. **Open the box.** The player uses the key on the locked box. Inside is a clue naming three things in the room and the order to read them.
+6. **Find the clue and the key.** One object reveals a clue. The clue never names the key's hiding place; it describes it in a riddle the player must match to an object by observing descriptions. Another object holds a small key (or tool), which the player collects into their inventory.
+7. **Open the box.** The player uses the key on the locked box. Inside is a clue describing three things in the room, by riddle rather than by name, and the order to read them.
 8. **Work out the code.** Each of those three things shows one digit when inspected. Read in the box's order, they form the three-digit code.
 9. **Unlock.** The player enters the code on the strange machine, which is the combination lock. A wrong code gets a playful response, and they can try again.
 10. **Escape.** The right code opens the exit with a satisfying animation, followed by an escape screen showing a room code.
@@ -58,9 +58,11 @@ Source: `scope.md > Inspiration & Identity`.
 Source: `scope.md > The Unique Kernel` (the handoff).
 - [ ] The engine picks the solution before the AI writes anything: the clue-holder, the key-holder, the three digit-holders and their order, and the digits.
 - [ ] The AI writes the theme, intro, descriptions, and clues, and decides how the three objects fit into the world. It does not choose the solution.
-- [ ] The room's story and descriptions visibly reference the player's three objects.
+- [ ] The room's story and descriptions visibly reference the player's three objects, and the objects relate to one another (one reacts to, depends on, or affects another).
+- [ ] Each object has a **riddle phrase** and a **signature word**. The signature word appears in that object's riddle and description and in no other object's; the riddle never contains the object's own name.
+- [ ] The key clue and the box's order clue refer to objects only by their riddles, never by name. Clue presentation varies by room (a rhyme, a recipe, a scratched warning, a whisper...).
 - [ ] Before the room is shown, the game checks that:
-  - the box clue names the correct three things in the correct order;
+  - the box clue describes the correct three things, by riddle, in the correct order;
   - each digit-holder's description shows its correct digit;
   - the key-holder's description reveals the key.
 - [ ] If generation fails or the check fails, the fallback room loads with a brief playful message (e.g., the player gets "a classic room instead").
@@ -86,7 +88,7 @@ Source: `scope.md > The Unique Kernel` (the handoff).
 ### Hints
 - [ ] A hint button is always available. Hints never appear on their own.
 - [ ] Hints depend on progress. Before the key is found, they lead toward the key. After the box is opened, they help with the combination.
-- [ ] Each step has three levels: (1) a gentle nudge about where to look, (2) a pointer to the relevant object or clue, (3) an explanation of how to work out the answer that doesn't simply hand it over.
+- [ ] Each step has three levels: (1) a gentle nudge about where to look, (2) a pointer to how to decode the clue (matching riddles to object traits) without naming any object, (3) an explanation that names the objects and how to work out the answer without stating the code.
 - [ ] Each press of the hint button reveals the next level for the current step.
 
 ### Escape Screen
@@ -108,6 +110,7 @@ Source: `scope.md > The Unique Kernel` (the handoff).
 - **One fixed puzzle chain:** clue → key → box → ordered digits → machine → exit. The AI changes the story, appearance, and which object plays each role, never the sequence.
 - **The strange machine is the combination lock.**
 - **The box clue gives the reading order, and each named thing shows one digit.** Every digit can be found by looking, not guessing.
+- **Clues are riddles, not names** (decided at the early checkpoint). Players must observe and connect each riddle to an object's signature trait instead of following instructions. The puzzle sequence stays fixed for now so the working game isn't put at risk.
 - **The hint button is on-demand, with three progress-aware levels.** It helps without giving the puzzle away.
 - **Unlimited code attempts with playful feedback.** Fair and low-pressure.
 - **A themed loading screen and a playful fallback message.** These keep the atmosphere intact even while waiting or recovering.
@@ -131,6 +134,7 @@ Source: `scope.md > The Unique Kernel` (the handoff).
 
 ## Possible Later Enhancements
 - More puzzle types and longer chains.
+- **Different puzzle sequences per room** (e.g., key inside the box, order hidden in an object). Considered at the early checkpoint and deferred: revisit if riddle clues still feel too predictable.
 - Multiple rooms.
 - Shareable codes that let a friend play the same room.
 

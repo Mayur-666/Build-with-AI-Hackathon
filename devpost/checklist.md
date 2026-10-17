@@ -29,7 +29,17 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Learner check: Generate two or three rooms with weird object combos and read the intro, descriptions, and clues. Do the three objects feel meaningfully connected to the story, not just digit-holders? Then play one AI room to the exit.
   Commit: `Generate validated rooms with Gemini, with fallback`
 
-- [ ] **3. Hints that follow your progress**
+- [x] **3. Clues you have to decode**
+  Becomes usable: Clues stop naming objects. Each object has a riddle and a signature trait woven into its description. The key clue and the box's order note describe objects only by riddle, in varied forms (a rhyme, a recipe, a scratched warning...). Players must inspect, notice traits, and connect them. The puzzle sequence is unchanged.
+  Why now: The early checkpoint found the puzzle "too predictable... just following a fixed checklist." This is a change to the kernel's clue layer, chosen by the learner, done before visuals so the game is fun to play underneath the art.
+  PRD ref: `prd.md > Room Generation and Validation`, `prd.md > The Core Journey` (steps 6–7), `prd.md > Hints`, `prd.md > Product Decisions`
+  Spec ref: `spec.md > Room validator (lib/game/validate.ts)`, `spec.md > Room filler (lib/game/fill.ts)`, `spec.md > Prompt builder (lib/ai/prompt.ts)`, `spec.md > Fallback room (lib/game/fallbackRoom.ts)`, `spec.md > Data Model`
+  Build: Add `riddle` and `signatureWord` to object text and to the Gemini schema. Update the prompt (riddles, objects relating to each other, varied clue forms, hint-level rules). Extend the validator with the riddle rules, the no-names-in-clues rule, and the hint-level rules. Make `fillRoom` fill clue/order placeholders with riddles and the rest with names. Rewrite the fallback room's clues and hints in the same style.
+  Verify (mechanical): Validator tests cover each new rule (a signature word missing or shared, a name in a riddle, a name in a clue, a name in a level-1/2 hint, a missing placeholder in a level-3 hint). Fill tests show riddles in clues and names in hints. The fallback room passes, and `npm test` and `npm run build` pass. Then at least 3 live rooms with very different objects: record the validation pass rate, and read each clue and riddle to confirm it's decodable from the descriptions.
+  Learner check: Play two or three new rooms without hints first. Did you have to observe and connect traits to figure out where the key is and what order to read? Was it still fair? Then use the hints to check they escalate properly.
+  Commit: `Riddle clues decoded from object traits`
+
+- [ ] **4. Hints that follow your progress**
   Becomes usable: A hint button that's always available. Each press reveals the next of three levels for your current step: finding the key, opening the box, or cracking the code. Levels reset when you advance. Wrong-item use gets its in-world line.
   Why now: This completes the "clever but fair" promise on top of a working AI room. It's mostly reducer logic, so it's cheap to verify before visuals.
   PRD ref: `prd.md > Hints`, `prd.md > Inventory and Using Items`
@@ -39,7 +49,7 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Learner check: In a fresh room, press hint three times before doing anything, then find the key and press hint again. Do the levels get more specific without giving the answer away?
   Commit: `Add progress-aware three-level hints`
 
-- [ ] **4. The illustrated storybook room**
+- [ ] **5. The illustrated storybook room**
   Becomes usable: The room looks like Pocket Dungeon. The midnight-blue and plum scene has warm golden light and drifting fireflies. Three glowing pedestals hold your objects (emoji plus a name plaque), with the machine, the box, and an arched door. Clickable things glow and pulse, and storybook headings appear throughout. The inventory, journal, inspect panel, and machine are styled as in-world panels.
   Why now: The mechanics and AI are proven, so visual time is now well spent. It's time-boxed per the scope: "simple enough that we can finish the full playable experience."
   PRD ref: `prd.md > Look and Feel`, `prd.md > Screens and Layout`, `prd.md > Exploring and Inspecting`
@@ -49,7 +59,7 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Learner check: Play a full room. Does it feel like a cozy, mysterious storybook room rather than a dashboard? Is it always clear what's clickable?
   Commit: `Illustrated storybook room scene`
 
-- [ ] **5. Themed screens and motion**
+- [ ] **6. Themed screens and motion**
   Becomes usable: A themed loading screen with a lantern animation and rotating in-world messages. An intro card, which shows the playful "classic room" note when the fallback was used. Discovery sparkles in the journal, a box lid-lift, a shake on a wrong code, and a light-spilling door-swing into a styled escape screen with the room code and "New room." Reduced-motion is respected. The README covers how to run and play.
   Why now: This is the polish layer on a complete, working game. If time runs short, it's the safest to trim.
   PRD ref: `prd.md > The Core Journey` (steps 2, 4, 10), `prd.md > Starting a Room`, `prd.md > Escape Screen`, `prd.md > States and Boundaries`, `prd.md > Look and Feel`
@@ -61,7 +71,7 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 2: try several very different object sets and check, for each, that (1) the clues make sense, (2) the objects feel connected to the story, and (3) the room is actually solvable. The feedback shapes the prompt and the remaining slices.
+- [ ] Early usable behavior explored — after slice 2 (feedback given: puzzle too predictable → slice 3 riddles added; UI feedback → slices 5–6; completes when the learner retries with riddle rooms): try several very different object sets and check, for each, that (1) the clues make sense, (2) the objects feel connected to the story, and (3) the room is actually solvable. The feedback shapes the prompt and the remaining slices.
 - [ ] Final kick-the-tires exploration and feedback completed
 
 ## Final Review
@@ -88,4 +98,5 @@ Activity mode:
 - API/network errors fall back immediately without a retry; only bad JSON, schema mismatch, or validator rejection retry — an auth or quota error won't fix itself on retry.
 - The engine now inserts "the" before name placeholders and capitalizes at sentence starts (`nounPhrase` in `fill.ts`) — live rooms showed Gemini writing "observe toaster" even when told to add articles; the engine owning facts now also owns that grammar.
 - Next.js 16 allows only one `next dev` per project folder — if a dev server is already running, use it rather than starting another.
-
+- Added slice 3 "Clues you have to decode" (old slices 3–5 renumbered 4–6) — at the early checkpoint the learner found the puzzle "too predictable"; they chose riddle-based clues with engine-checked signature words and kept the fixed sequence. Different puzzle sequences are deferred (`prd.md > Possible Later Enhancements`). Their UI feedback (room as the focus, objects placed naturally, smaller inspection panels, a proper inventory/journal, subtle animation) shapes slices 5–6 without adding scope.
+- Live riddle rooms (4 very different object sets): all valid; 3 of 4 passed on the first attempt, and 1 was rejected for naming "tiny moon" in its clue, then passed on the retry. Latency is unchanged at ~10–14s per attempt.
