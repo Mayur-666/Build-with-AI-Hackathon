@@ -32,6 +32,9 @@ html {
 }
 
 body {
+  /* flow-root stops a child's vertical margin from collapsing through <body>,
+     which would push the page taller than the window. */
+  display: flow-root;
   background:
     radial-gradient(ellipse at 50% 0%, #2a2350 0%, transparent 60%),
     radial-gradient(ellipse at 50% 100%, #1c1440 0%, transparent 60%),
@@ -413,7 +416,8 @@ h3,
     max-width: none;
     width: auto;
     padding: 0;
-    margin: max(16px, calc((100svh - var(--stage-w) / 1.6) / 2)) auto;
+    /* Centre vertically; the 1px keeps sub-pixel rounding from adding a scrollbar. */
+    margin: max(12px, calc((100svh - var(--stage-w) / 1.6) / 2 - 1px)) auto;
     justify-content: center;
     align-content: stretch;
   }
@@ -928,4 +932,9 @@ h3,
 .room-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 24px 50px -20px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(242, 193, 78, 0.45);
+}
+
+/* On the room screen, the sound toggles live in the sidebar instead of the corner. */
+.room-layout ~ .sound-fixed {
+  display: none;
 }

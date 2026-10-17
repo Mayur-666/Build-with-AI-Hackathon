@@ -5,6 +5,7 @@ import { AdventureHub, type RoomStatus } from "@/components/AdventureHub";
 import { DisturbanceScreen, type DisturbanceReason } from "@/components/DisturbanceScreen";
 import { EscapeScreen, type EscapeAction, type EscapeStats } from "@/components/EscapeScreen";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { SoundControls } from "@/components/SoundControls";
 import { StartScreen } from "@/components/StartScreen";
 import { ClueJournal } from "@/components/room/ClueJournal";
 import { ConfirmDialog } from "@/components/room/ConfirmDialog";
@@ -463,6 +464,7 @@ export default function GameShell() {
           <span className="font-mono text-xs tracking-wider text-ink/40" title="This playthrough's save code (this browser only)">
             {session.saveId}
           </span>
+          <SoundControls variant="inline" />
         </div>
       </aside>
 

@@ -2,12 +2,16 @@
 
 import { sound, useSound } from "@/lib/audio";
 
-/** Two small toggles: sound effects and music. Both start off. */
-export function SoundControls() {
+/** Two small toggles: sound effects and music. Both start off. "inline" sits in the room sidebar. */
+export function SoundControls({ variant = "fixed" }: { variant?: "fixed" | "inline" }) {
   const prefs = useSound();
   const base = "satchel grid h-10 w-10 place-items-center rounded-full text-lg transition hover:scale-105";
   return (
-    <div className="fixed bottom-3 right-3 z-50 flex gap-2 sm:bottom-auto sm:top-3" role="group" aria-label="Sound">
+    <div
+      className={variant === "fixed" ? "sound-fixed fixed bottom-3 right-3 z-50 flex gap-2 sm:bottom-auto sm:top-3" : "flex gap-2"}
+      role="group"
+      aria-label="Sound"
+    >
       <button
         onClick={() => sound.setSfx(!prefs.sfx)}
         aria-pressed={prefs.sfx}
