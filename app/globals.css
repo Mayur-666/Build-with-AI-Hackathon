@@ -938,3 +938,48 @@ h3,
 .room-layout ~ .sound-fixed {
   display: none;
 }
+
+/* ───────────── Escape screen layout ─────────────
+   Portrait: one centred column. Landscape: the way out on the left, results on the right,
+   sized to the window so nothing scrolls. */
+
+.escape {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+}
+
+.escape-grid {
+  display: flex;
+  width: 100%;
+  max-width: 72rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+@media (min-width: 900px) and (min-aspect-ratio: 5 / 4) {
+  .escape {
+    height: 100svh;
+    padding-top: 4.5rem; /* clear of the corner sound toggles */
+    padding-bottom: 1.5rem;
+  }
+  .escape-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 4rem);
+  }
+  .escape-arch {
+    width: min(38vw, 260px, 34svh);
+  }
+  .escape-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) and (min-aspect-ratio: 5 / 4) and (min-height: 860px) {
+  .escape-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

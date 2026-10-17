@@ -44,7 +44,7 @@ export function EscapeScreen({ title, escapeText, roomId, saveId, stats, totalCl
   ];
 
   return (
-    <main className="escape relative flex min-h-svh flex-col items-center justify-center gap-4 overflow-hidden px-4 py-6 text-center sm:gap-5">
+    <main className="escape relative overflow-hidden px-4 pb-6 pt-16 text-center">
       <div className="landing-sky pointer-events-none absolute inset-0" aria-hidden />
       <div className="escape-rays pointer-events-none absolute inset-0" aria-hidden />
       {Array.from({ length: 14 }, (_, i) => (
@@ -56,6 +56,9 @@ export function EscapeScreen({ title, escapeText, roomId, saveId, stats, totalCl
         />
       ))}
 
+      <div className="escape-grid relative">
+      {/* Left on wide screens: the way out, and the ending. */}
+      <div className="escape-hero flex flex-col items-center gap-4">
       <div className="escape-arch relative" aria-hidden>
         <svg viewBox="0 0 200 220" className="h-full w-full">
           <defs>
@@ -80,8 +83,11 @@ export function EscapeScreen({ title, escapeText, roomId, saveId, stats, totalCl
         <h1 className="text-5xl text-gold drop-shadow-[0_0_24px_rgba(242,193,78,0.5)] sm:text-6xl">You escaped!</h1>
         <p className="text-lg leading-relaxed text-ink/90">{escapeText}</p>
       </div>
+      </div>
 
-      <ul className="relative grid w-full max-w-xl grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* Right on wide screens: how it went, the save code, what next. */}
+      <div className="escape-panel flex flex-col items-center gap-4">
+      <ul className="escape-stats relative grid w-full max-w-xl grid-cols-2 gap-3 sm:grid-cols-4">
         {STATS.map((s) => (
           <li key={s.label} className="landing-card rounded-2xl px-3 py-3">
             <span className="block text-2xl" aria-hidden>
@@ -122,6 +128,8 @@ export function EscapeScreen({ title, escapeText, roomId, saveId, stats, totalCl
       <Link href="/" className="font-storybook relative text-candle/75 underline-offset-4 hover:text-candle hover:underline">
         Back to the moonlit gate
       </Link>
+      </div>
+      </div>
     </main>
   );
 }

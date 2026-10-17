@@ -8,7 +8,7 @@ export function SoundControls({ variant = "fixed" }: { variant?: "fixed" | "inli
   const base = "satchel grid h-10 w-10 place-items-center rounded-full text-lg transition hover:scale-105";
   return (
     <div
-      className={variant === "fixed" ? "sound-fixed fixed bottom-3 right-3 z-50 flex gap-2 sm:bottom-auto sm:top-3" : "flex gap-2"}
+      className={variant === "fixed" ? "sound-fixed absolute right-3 top-3 z-50 flex gap-2 sm:fixed" : "flex gap-2"}
       role="group"
       aria-label="Sound"
     >
