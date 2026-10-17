@@ -98,7 +98,7 @@ Source: `scope.md > The Unique Kernel` (the handoff).
 ## States and Boundaries
 
 - **Generating:** the themed loading screen, never a blank screen or plain spinner.
-- **Generation or validation failure:** the fallback room loads automatically with a playful message. The player is never stuck.
+- **Generation or validation failure:** an in-world "disturbance in the dungeon's magic" screen explains the reason in plain words (busy/rate-limited, temporarily unavailable, the room didn't hold together, or the storyteller can't be reached) and offers Retry, Enter the classic room, or Change objects. The player is never stuck. *(Changed at the learner's request during the build.)*
 - **First moments in the room:** the inventory and journal are empty, and the hint button already works.
 - **Wrong item use or wrong code:** a playful response, no penalty, no lost progress.
 - **Persistence:** nothing persists. Refreshing or leaving loses the current room. *(Confirmed, consistent with scope's "no database or saved rooms.")*

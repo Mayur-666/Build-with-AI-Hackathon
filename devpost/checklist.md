@@ -79,7 +79,27 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Learner check: In a fresh room, press hint three times before doing anything, then find the key and press hint again. Do the levels get more specific without giving the answer away?
   Commit: `Add progress-aware three-level hints`
 
-- [ ] **8. Sound and extra game feel**
+- [x] **8. Model fallback within a strict two-call budget**
+  Becomes usable: Room generation tries a configurable list of Gemini models in order: `gemini-3.8-flash`, then `gemini-3.1-flash-lite`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`. There are never more than two API calls per room. Invalid output, rate limits, timeouts, 5xx, and missing models move to the next model; key/permission errors stop at once. If both calls fail, the classic room comes back with a reason (`rate_limited`, `unavailable`, `invalid_output`, `config`) the UI can explain.
+  Why now: The learner asked for an audit. The old code retried the same model, gave up on any API error, and couldn't tell the player why.
+  PRD ref: `prd.md > Room Generation and Validation`, `prd.md > States and Boundaries`
+  Spec ref: `spec.md > POST /api/generate-room (route handler)`, `spec.md > Gemini client (lib/ai/gemini.ts)`, `spec.md > External Services and Dependencies`, `spec.md > Important Failure Modes`
+  Build: `lib/ai/config.ts` (model list, `MAX_GENERATION_CALLS = 2`, env overrides that can only lower it), `lib/ai/errors.ts` (pure classification), `lib/ai/gemini.ts` (`createGeminiWriter`; SDK retries explicitly off; injectable fetch), `lib/ai/generateRoom.ts` (budgeted model loop, per-call diagnostics with redaction), and a route that logs diagnostics server-side and returns only `{ room, usedFallback, fallbackReason? }`.
+  Verify (mechanical): `tests/generateRoom.test.ts` (model switching, invalid output, rate limits, timeouts/5xx, 404, non-retryable key errors, two-call ceiling with 20 models or `maxCalls: 10`, empty list, key redaction), `tests/aiConfig.test.ts` (config + classification), and `tests/geminiHttp.test.ts` (the real SDK against a counting fake `fetch`: 429/503 → exactly 2 HTTP requests, bad key → 1, no key → 0). A mutation check (turning SDK retries on) made the HTTP tests fail as expected. Live: model availability probed with the learner's key.
+  Learner check: Generate a room normally, then open `/play?fallback` to see the fallback path.
+  Commit: `Model fallback with a strict two-call budget`
+
+- [ ] **9. Gamify every screen and state**
+  Becomes usable: One moonlit storybook look across every route and state. Object setup feels like preparing an adventure (relic slots, a "surprise me" roll). Loading is a themed portal with playful rotating messages. A failed generation appears as "a disturbance in the dungeon's magic" with the real reason and Retry / Enter the classic room / Change objects. In the room, objects react when inspected, items fly to the satchel, the machine celebrates a correct code, and the door visibly swings open, light spilling out, before the escape. The escape screen is illustrated and shows your stats. Wrong guesses, locked things, hints, and confirmations (like leaving a room) are all in-world. Keyboard and touch work throughout, and reduced motion is respected.
+  Why now: The learner asked for the whole experience to feel like a polished point-and-click adventure, not a dashboard with a game inside it.
+  PRD ref: `prd.md > Screens and Layout`, `prd.md > Look and Feel`, `prd.md > States and Boundaries`, `prd.md > The Combination Machine`, `prd.md > Escape Screen`
+  Spec ref: `spec.md > Look and Feel`, `spec.md > StartScreen`, `spec.md > LoadingScreen`, `spec.md > IntroCard`, `spec.md > EscapeScreen`, `spec.md > CodeMachine`
+  Build: Rebuild StartScreen, LoadingScreen, a new DisturbanceScreen (fallback/error), EscapeScreen, in-room feedback (inspect reaction, collect fly-in, machine success, door-open sequence), a leave-room confirmation, and keyboard dial controls. Win condition unchanged: the correct code escapes; the door animation plays before the escape screen.
+  Verify (mechanical): `npm test` and `npm run build` pass. Scripted Edge runs at 1000×733 and 390×844 cover start → loading → room → escape with no console errors; each forced fallback reason shows the disturbance screen and both recovery actions work; keyboard-only dial entry works; no horizontal overflow.
+  Learner check: Play from the landing page to escape. Then force a rate-limit fallback with `/play?fallback=rate_limited` and try both recovery options.
+  Commit: `Gamify every screen and state`
+
+- [ ] **10. Sound and extra game feel**
   Becomes usable: Subtle sounds for inspecting, collecting, unlocking, a wrong code, and escaping, plus optional ambient music. Everything is off until the player turns sound on with a visible toggle. Includes a few extra interactions beyond clicking, to be agreed with the learner.
   Why now: The learner wants more game feel. It goes after hints so the core experience is complete first.
   PRD ref: `prd.md > Look and Feel`
@@ -88,16 +108,6 @@ Build mode: fast (checkpoints after slice 2 and at final review; explain anythin
   Verify (mechanical): `npm test` and `npm run build` pass. A scripted playthrough with sound enabled shows no console errors. Audio stays silent until the toggle is pressed.
   Learner check: Turn sound on and play a room. Are the sounds pleasant and not repetitive? Does the toggle work?
   Commit: `Sound and extra interactions`
-
-- [ ] **9. Themed screens and motion**
-  Becomes usable: A themed loading screen with a lantern animation and rotating in-world messages. An intro card, which shows the playful "classic room" note when the fallback was used. Discovery sparkles in the journal, a box lid-lift, a shake on a wrong code, and a light-spilling door-swing into a styled escape screen with the room code and "New room." Reduced-motion is respected. The README covers how to run and play.
-  Why now: This is the polish layer on a complete, working game. If time runs short, it's the safest to trim.
-  PRD ref: `prd.md > The Core Journey` (steps 2, 4, 10), `prd.md > Starting a Room`, `prd.md > Escape Screen`, `prd.md > States and Boundaries`, `prd.md > Look and Feel`
-  Spec ref: `spec.md > LoadingScreen`, `spec.md > IntroCard`, `spec.md > EscapeScreen`, `spec.md > Look and Feel`, `spec.md > Where It Runs and How Someone Tries It`
-  Build: `LoadingScreen`, `IntroCard`, and a restyled `StartScreen`/`EscapeScreen`. CSS keyframes for the sparkle, lid, shake, and door, with a `prefers-reduced-motion` override. Update the README.
-  Verify (mechanical): `npm run build` and `npm test` pass. A forced-fallback request shows the fallback note in the intro (check the HTML/state). The dev server runs a full journey with no errors.
-  Learner check: Play from the start screen to escape and back to a new room, once with Gemini and once with the fallback forced. Do the loading screen, unlock moments, and escape feel satisfying?
-  Commit: `Themed loading, intro, escape screens and animations`
 
 ## Hands-on Checkpoints
 
@@ -139,4 +149,7 @@ Activity mode:
 - Drag-and-drop uses a single `DROP_ITEM` reducer action (= hold + use) rather than two dispatches, so it's unit-testable and can't diverge from click-to-use. Targets don't reveal validity while hovering (that would give the puzzle away); every hotspot glows and the one under the item lifts and shows its plaque. A wrong drop wiggles the target. Verified with real mouse input at 1366×768 and real CDP touch events at 390×844.
 - Stopping a backgrounded `npx next dev` can leave its child Next.js process holding the port, and a dev server running across a page move served stale HTML (hydration error). Restarting the server fixed it, with no code change needed.
 - Hints: the step is derived from progress (`currentHintStep`), so levels reset automatically when the player advances; there's no separate reset logic to get wrong. The owl button sits in the sidebar with three level pips, and the sidebar's bottom row wraps when it's narrow (260px at 1000px wide). Verified in Edge: levels 1→2→3, then stays at 3.
+- Model availability probed with the learner's key: `gemini-3.8-flash`, `gemini-3.1-flash-lite`, `gemini-3.5-flash-lite`, and `gemini-3.6-flash` all answered a structured-output call; `gemini-2.5-flash-lite` returned 404 "no longer available to new users" and is excluded. The SDK retries only when `retryOptions` is passed (default 5 attempts on 408/429/5xx), so the writer now sets `attempts: 1` explicitly, and the HTTP-level tests guard it.
+- Old slice 9 (themed screens) is replaced by slice 9 "Gamify every screen and state" (the learner's broader request). Sound (now slice 10) is still waiting on the learner's door and extra-interaction decisions.
+- Fallback UX change (learner request): a failed generation no longer drops the player silently into the classic room; it shows an in-world disturbance screen with the reason and recovery choices. This updates `prd.md > States and Boundaries`.
 

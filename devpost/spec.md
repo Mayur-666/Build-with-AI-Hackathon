@@ -325,6 +325,9 @@ pocket-dungeon/ (repo root = this project folder)
 ## External Services and Dependencies
 
 ### Google Gemini API
+- **Models, in order** (`lib/ai/config.ts`): `gemini-3.8-flash`, `gemini-3.1-flash-lite`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`. Override with `GEMINI_MODELS`. `gemini-2.5-flash-lite` is excluded: it's unavailable to new keys.
+- **Budget:** at most **2 API calls per room** across all models (`MAX_GENERATION_CALLS`). `GEMINI_MAX_CALLS` can only lower it, and SDK retries are disabled.
+- **Retry policy:** invalid output, 429, 5xx, timeout/network, and 404/400-model errors go to the next model; key/permission errors stop at once. If both calls fail, the classic room is returned with `fallbackReason`.
 - **Call:** `ai.models.generateContent({ model: "gemini-3.8-flash", contents: prompt, config: { responseMimeType: "application/json", responseJsonSchema: roomTextJsonSchema } })`, then read `response.text` → `JSON.parse` → Zod parse. *(The config field name must be verified; see Stack.)*
 - **Auth:** `new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })`, server-side only.
 - **Calls per room:** 1, or 2 if the first fails validation.
