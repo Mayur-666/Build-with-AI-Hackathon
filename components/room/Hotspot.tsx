@@ -15,20 +15,24 @@ type Props = {
   drop?: "ready" | "over" | null;
   /** Briefly true after a wrong item was used here. */
   nope?: boolean;
+  /** Briefly true right after it was inspected: the object reacts. */
+  poked?: boolean;
+  disabled?: boolean;
   onClick: () => void;
   children: ReactNode;
 };
 
 /** A clickable thing in the scene: glows when unvisited, lifts on hover, shows a brass name plaque. */
-export function Hotspot({ id, label, tag, tagMode = "always", style, unvisited, using, drop, nope, onClick, children }: Props) {
+export function Hotspot({ id, label, tag, tagMode = "always", style, unvisited, using, drop, nope, poked, disabled, onClick, children }: Props) {
   return (
     <button
       type="button"
       aria-label={label}
       data-hotspot={id}
+      disabled={disabled}
       onClick={onClick}
       style={style}
-      className={`hotspot ${unvisited ? "unvisited" : ""} ${using ? "using" : ""} ${drop ? `drop-${drop}` : ""} ${nope ? "nope" : ""}`}
+      className={`hotspot ${unvisited ? "unvisited" : ""} ${using ? "using" : ""} ${drop ? `drop-${drop}` : ""} ${nope ? "nope" : ""} ${poked ? "poked" : ""}`}
     >
       <span className="art relative block h-full w-full">{children}</span>
       <span className={`tag ${tagMode === "hover" && drop !== "over" ? "hover-only" : ""}`}>{tag}</span>

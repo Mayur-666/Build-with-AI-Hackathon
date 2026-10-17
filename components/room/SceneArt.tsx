@@ -90,25 +90,38 @@ export function SideTable() {
 
 export function Door({ open = false }: { open?: boolean }) {
   return (
-    <svg viewBox="0 0 100 170" className="h-full w-full" aria-hidden>
-      <defs>
-        <linearGradient id="wood" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#4a2c18" />
-          <stop offset="0.5" stopColor="#6b4226" />
-          <stop offset="1" stopColor="#4a2c18" />
-        </linearGradient>
-        <radialGradient id="beyond" cx="0.5" cy="0.6">
-          <stop offset="0" stopColor="#fff2c4" />
-          <stop offset="1" stopColor="#f2c14e" />
-        </radialGradient>
-      </defs>
-      {/* stone arch */}
-      <path d="M2 170 V52 A48 48 0 0 1 98 52 V170 Z" fill="#4d4170" />
-      <path d="M2 170 V52 A48 48 0 0 1 98 52" fill="none" stroke="#6d5f94" strokeWidth="3" strokeDasharray="10 3" />
-      {/* light beyond (visible when open) */}
-      <path d="M12 170 V56 A38 38 0 0 1 88 56 V170 Z" fill={open ? "url(#beyond)" : "#120c22"} />
-      {!open && (
-        <g>
+    <div className={`door ${open ? "open" : ""}`}>
+      <svg viewBox="0 0 100 170" className="absolute inset-0 h-full w-full" aria-hidden>
+        <defs>
+          <radialGradient id="beyond" cx="0.5" cy="0.65">
+            <stop offset="0" stopColor="#fffbe8" />
+            <stop offset="0.6" stopColor="#ffe08a" />
+            <stop offset="1" stopColor="#f2c14e" />
+          </radialGradient>
+        </defs>
+        {/* stone arch */}
+        <path d="M2 170 V52 A48 48 0 0 1 98 52 V170 Z" fill="#4d4170" />
+        <path d="M2 170 V52 A48 48 0 0 1 98 52" fill="none" stroke="#6d5f94" strokeWidth="3" strokeDasharray="10 3" />
+        {/* the world beyond: dark until the door opens */}
+        <path d="M12 170 V56 A38 38 0 0 1 88 56 V170 Z" fill={open ? "url(#beyond)" : "#120c22"} className="door-beyond" />
+        {open && (
+          <g className="door-stars">
+            <circle cx="40" cy="60" r="1.6" fill="#fff" />
+            <circle cx="62" cy="48" r="1.2" fill="#fff" />
+            <circle cx="55" cy="84" r="1" fill="#fff" />
+          </g>
+        )}
+      </svg>
+      {/* the leaf swings open in 3D */}
+      <div className="door-leaf" aria-hidden>
+        <svg viewBox="12 18 76 152" className="h-full w-full" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="wood" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor="#4a2c18" />
+              <stop offset="0.5" stopColor="#6b4226" />
+              <stop offset="1" stopColor="#4a2c18" />
+            </linearGradient>
+          </defs>
           <path d="M12 170 V56 A38 38 0 0 1 88 56 V170 Z" fill="url(#wood)" />
           <path d="M31 22 V170 M50 18 V170 M69 22 V170" stroke="#3a2212" strokeWidth="1.6" />
           <rect x="12" y="70" width="76" height="6" fill="#2d2236" />
@@ -116,15 +129,15 @@ export function Door({ open = false }: { open?: boolean }) {
           <circle cx="76" cy="104" r="4.5" fill="#c79a42" />
           <path d="M74.5 109 h3 l1 7 h-5 z" fill="#1a1020" />
           <circle cx="76" cy="104" r="1.6" fill="#1a1020" />
-        </g>
-      )}
-    </svg>
+        </svg>
+      </div>
+    </div>
   );
 }
 
-export function Machine() {
+export function Machine({ solved = false }: { solved?: boolean }) {
   return (
-    <svg viewBox="0 0 120 200" className="h-full w-full" aria-hidden>
+    <svg viewBox="0 0 120 200" className={`h-full w-full ${solved ? "machine-solved" : ""}`} aria-hidden>
       <defs>
         <linearGradient id="brassBody" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#e9c86e" />

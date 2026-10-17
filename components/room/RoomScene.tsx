@@ -10,8 +10,12 @@ type Props = {
   onHotspot: (id: HotspotId) => void;
   /** The hotspot an item is being dragged over, or undefined when nothing is being dragged. */
   dragOver?: HotspotId | null;
-  /** The hotspot that just rejected an item (wiggles briefly). */
+  /** The hotspot that just rejected an item or is locked (wiggles briefly). */
   nope?: HotspotId | null;
+  /** The hotspot just inspected (reacts briefly). */
+  poked?: HotspotId | null;
+  /** The code was right: the machine celebrates and the door swings open. */
+  escaping?: boolean;
 };
 
 const pct = (left: number, top: number, width: number, height: number): CSSProperties => ({
@@ -39,7 +43,7 @@ const FIREFLIES = [
 ];
 
 /** The one fixed storybook room. Every clickable thing is a <Hotspot>. */
-export function RoomScene({ state, onHotspot, dragOver, nope }: Props) {
+export function RoomScene({ state, onHotspot, dragOver, nope, poked, escaping = false }: Props) {
   const { room } = state;
   const using = state.selectedItem !== null;
   const unvisited = (id: HotspotId) => !state.inspected.includes(id);
@@ -49,12 +53,14 @@ export function RoomScene({ state, onHotspot, dragOver, nope }: Props) {
     using,
     drop: dragOver === undefined ? null : dragOver === id ? ("over" as const) : ("ready" as const),
     nope: nope === id,
+    poked: poked === id,
+    disabled: escaping,
     onClick: () => onHotspot(id),
   });
   const verb = (what: string) => (using ? `Use the ${state.inventory[0]?.name ?? "item"} on the ${what}` : `Inspect the ${what}`);
 
   return (
-    <div className="scene">
+    <div className={`scene ${escaping ? "escaping" : ""}`}>
       {/* back to front */}
       <div className="scene-layer wall" />
       <div className="scene-layer wainscot" style={{ top: "52%", bottom: "34%" }} />
@@ -84,7 +90,7 @@ export function RoomScene({ state, onHotspot, dragOver, nope }: Props) {
         style={pct(41.5, 12.5, 17, 54)}
         {...common("exit")}
       >
-        <Door />
+        <Door open={escaping} />
       </Hotspot>
 
       {(["a", "b", "c"] as const).map((id) => {
@@ -110,7 +116,7 @@ export function RoomScene({ state, onHotspot, dragOver, nope }: Props) {
         style={pct(77, 22, 19, 60)}
         {...common("machine")}
       >
-        <Machine />
+        <Machine solved={escaping} />
       </Hotspot>
 
       <Hotspot
@@ -128,6 +134,7 @@ export function RoomScene({ state, onHotspot, dragOver, nope }: Props) {
         <span key={i} className="firefly" style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${delay}s, ${delay / 2}s` }} />
       ))}
       <div className="scene-layer vignette" />
+      {escaping && <div className="scene-layer escape-flood" />}
     </div>
   );
 }

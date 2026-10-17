@@ -10,7 +10,16 @@ type Props = {
   onCollect: () => void;
 };
 
-/** The parchment narration strip under the scene. */
+const TONE_ICON: Partial<Record<NonNullable<Message["tone"]>, string>> = {
+  hint: "🦉",
+  locked: "🔒",
+  discovery: "✨",
+  wrong: "💨",
+  success: "🌟",
+  intro: "🌙",
+};
+
+/** The parchment narration beside the scene. */
 export function InspectPanel({ message, keyOffered, keyName, keyEmoji, onCollect }: Props) {
   // Re-mount on each new message so it animates in.
   const key = message ? `${message.title}|${message.lines.join("|")}` : "empty";
@@ -19,13 +28,13 @@ export function InspectPanel({ message, keyOffered, keyName, keyEmoji, onCollect
       key={key}
       aria-live="polite"
       className={`parchment pop-in relative min-h-[5.5rem] min-w-0 rounded-xl px-4 py-3 sm:px-5 ${message?.tone === "wrong" ? "shake" : ""} ${
-        message?.tone === "discovery" ? "sparkle-in" : ""
+        message?.tone === "discovery" || message?.tone === "success" ? "sparkle-in" : ""
       }`}
     >
       {message ? (
         <>
           <h2 className="mb-1 text-lg text-[#6b3a14] first-letter:uppercase">
-            {message.tone === "hint" && <span aria-hidden>🦉 </span>}
+            {message.tone && TONE_ICON[message.tone] && <span aria-hidden>{TONE_ICON[message.tone]} </span>}
             {message.title}
           </h2>
           {message.lines.map((line, i) => (

@@ -99,10 +99,20 @@ describe("gameReducer — the fixed puzzle chain", () => {
     expect(gameReducer(start, { type: "DROP_ITEM", item: "key", target: "box" })).toBe(start);
   });
 
-  it("the locked box and door only describe themselves", () => {
-    const s = play(freshGame(), [{ type: "INSPECT", target: "box" }, { type: "INSPECT", target: "exit" }]);
+  it("the locked box and door only describe themselves, in a locked tone", () => {
+    let s = gameReducer(freshGame(), { type: "INSPECT", target: "box" });
+    expect(s.message?.tone).toBe("locked");
+    s = gameReducer(s, { type: "INSPECT", target: "exit" });
+    expect(s.message?.tone).toBe("locked");
     expect(s.boxOpen).toBe(false);
     expect(s.escaped).toBe(false);
+  });
+
+  it("the correct code escapes with a success message (the win condition)", () => {
+    const start = freshGame();
+    const s = gameReducer(start, { type: "ENTER_CODE", code: start.room.solution.code });
+    expect(s.escaped).toBe(true);
+    expect(s.message).toEqual({ title: "The strange machine", lines: [start.room.escapeText], tone: "success" });
   });
 
   it("the key can't be taken before it's found", () => {
@@ -160,7 +170,8 @@ describe("gameReducer — hints follow progress", () => {
   it("asking for a hint changes nothing about the puzzle", () => {
     const start = freshGame();
     const s = hint(hint(start));
-    expect({ ...s, message: null, hintLevel: 0 }).toEqual({ ...start, message: null, hintLevel: 0 });
+    expect(s.hintsUsed).toBe(2);
+    expect({ ...s, message: null, hintLevel: 0, hintsUsed: 0 }).toEqual({ ...start, message: null, hintLevel: 0, hintsUsed: 0 });
   });
 });
 

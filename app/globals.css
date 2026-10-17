@@ -511,3 +511,280 @@ h3,
   font-size: 0.8rem;
   padding: 2px 10px;
 }
+
+/* ───────────── Setup: relic pedestals ───────────── */
+
+.relic-orb {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  translate: -50% 0;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  font-family: var(--font-storybook), Georgia, serif;
+  font-size: 30px;
+  color: rgba(255, 232, 168, 0.55);
+  background: radial-gradient(circle at 40% 35%, rgba(180, 160, 230, 0.35), rgba(60, 45, 110, 0.4) 70%);
+  border: 1px dashed rgba(242, 193, 78, 0.35);
+  animation: float 4s ease-in-out infinite;
+  transition: box-shadow 0.4s ease, background 0.4s ease;
+}
+
+.relic-orb.lit {
+  color: var(--candle);
+  border-style: solid;
+  background: radial-gradient(circle at 40% 35%, rgba(255, 246, 208, 0.75), rgba(242, 193, 78, 0.35) 60%, rgba(91, 74, 122, 0.4));
+  box-shadow: 0 0 30px 6px rgba(242, 193, 78, 0.45);
+}
+
+.relic-orb.rolling {
+  animation: roll 0.5s ease-out;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes roll {
+  0% { transform: rotate(0) scale(0.6); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* ───────────── Loading: the portal ───────────── */
+
+.portal {
+  position: relative;
+  width: min(70vw, 320px);
+  aspect-ratio: 1;
+}
+
+.portal-swirl {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #5b4a7a, #f2c14e, #2a2350, #b48cff, #5b4a7a, #f2c14e, #2a2350);
+  filter: blur(10px);
+  opacity: 0.85;
+  animation: spin 6s linear infinite;
+}
+
+.portal-core {
+  position: absolute;
+  inset: 26%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff6d6 0%, #ffe08a 35%, rgba(42, 35, 80, 0.9) 75%);
+  box-shadow: 0 0 60px 20px rgba(242, 193, 78, 0.35);
+  animation: breathe-core 2.4s ease-in-out infinite;
+}
+
+@keyframes breathe-core {
+  0%, 100% { transform: scale(0.94); }
+  50% { transform: scale(1.04); }
+}
+
+.portal-orbit {
+  position: absolute;
+  inset: 0;
+  animation: spin 6s linear infinite;
+}
+
+.portal-tag {
+  position: absolute;
+  left: 50%;
+  top: -2%;
+  translate: -50% 0;
+  white-space: nowrap;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-family: var(--font-storybook), Georgia, serif;
+  color: var(--sepia);
+  background: linear-gradient(180deg, #f1d58a, #c99a3e);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  animation: spin 6s linear infinite reverse;
+}
+
+/* ───────────── Disturbance ───────────── */
+
+.storm {
+  position: relative;
+  width: min(48vw, 220px);
+  aspect-ratio: 1;
+}
+
+.storm-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: breathe-core 2s ease-in-out infinite;
+}
+
+.storm-ring {
+  transform-box: view-box;
+  transform-origin: 100px 100px;
+  animation: spin 9s linear infinite;
+}
+
+.storm-bolt {
+  animation: bolt 3.2s steps(1) infinite;
+}
+
+@keyframes bolt {
+  0%, 100% { opacity: 0; }
+  8% { opacity: 1; }
+  12% { opacity: 0; }
+  16% { opacity: 1; }
+  22% { opacity: 0; }
+}
+
+/* ───────────── In-room reactions ───────────── */
+
+.hotspot.poked .art {
+  animation: poke 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes poke {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.12, 0.9) translateY(0.3cqw); }
+  60% { transform: scale(0.95, 1.08) translateY(-0.8cqw); }
+  100% { transform: scale(1); }
+}
+
+.hotspot:disabled {
+  cursor: default;
+}
+
+.satchel-fresh {
+  animation: satchel-glow 1.2s ease-out;
+}
+
+@keyframes satchel-glow {
+  0% { box-shadow: 0 0 0 0 rgba(242, 193, 78, 0.9); }
+  40% { box-shadow: 0 0 26px 8px rgba(242, 193, 78, 0.6); }
+  100% { box-shadow: 0 0 0 0 rgba(242, 193, 78, 0); }
+}
+
+.fly-in {
+  animation: fly-in 0.8s cubic-bezier(0.22, 1.2, 0.36, 1);
+}
+
+@keyframes fly-in {
+  0% { transform: translate(-40px, -120px) scale(1.8) rotate(-30deg); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: none; }
+}
+
+.dial-digit {
+  display: inline-block;
+  animation: dial-tick 0.18s ease-out;
+}
+
+@keyframes dial-tick {
+  from { transform: translateY(-40%); opacity: 0.2; }
+  to { transform: none; opacity: 1; }
+}
+
+/* The door: a 3D leaf over a glowing doorway */
+.door {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  perspective: 60cqw;
+}
+
+.door-leaf {
+  position: absolute;
+  left: 12%;
+  top: 10.6%;
+  width: 76%;
+  height: 89.4%;
+  transform-origin: 0% 50%;
+  transition: transform 1.6s cubic-bezier(0.45, 0.05, 0.25, 1) 0.35s, filter 1.6s ease 0.35s;
+}
+
+.door.open .door-leaf {
+  transform: rotateY(-78deg);
+  filter: brightness(0.7);
+}
+
+.door.open .door-beyond {
+  filter: drop-shadow(0 0 2cqw rgba(255, 232, 140, 0.9));
+}
+
+.machine-solved .bulb {
+  animation: bulb-party 0.3s ease-in-out infinite alternate;
+}
+
+.machine-solved .gear {
+  animation-duration: 1.2s;
+}
+
+@keyframes bulb-party {
+  from { opacity: 0.4; }
+  to { opacity: 1; filter: brightness(1.6); }
+}
+
+.escape-flood {
+  z-index: 35;
+  background: radial-gradient(ellipse 30% 45% at 50% 40%, rgba(255, 240, 190, 0.95), rgba(255, 220, 130, 0.5) 45%, transparent 75%);
+  opacity: 0;
+  animation: flood 2.3s ease-in forwards 0.6s;
+}
+
+@keyframes flood {
+  0% { opacity: 0; transform: scale(0.6); }
+  70% { opacity: 0.85; }
+  100% { opacity: 1; transform: scale(2.6); }
+}
+
+.escape-caption {
+  text-shadow: 0 0 12px rgba(20, 10, 40, 0.9), 0 2px 4px rgba(20, 10, 40, 0.9);
+  opacity: 0;
+  animation: caption 2.3s ease forwards 0.8s;
+}
+
+@keyframes caption {
+  0% { opacity: 0; transform: translateY(10px); }
+  40% { opacity: 1; transform: none; }
+  100% { opacity: 1; }
+}
+
+/* ───────────── Escape screen ───────────── */
+
+.escape-arch {
+  width: min(55vw, 220px, 24svh);
+  aspect-ratio: 200 / 220;
+  filter: drop-shadow(0 0 40px rgba(242, 193, 78, 0.35));
+  animation: pop-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.escape-moon {
+  filter: drop-shadow(0 0 8px #fff1c2);
+}
+
+.escape-rays {
+  background: repeating-conic-gradient(from 0deg at 50% 30%, rgba(242, 193, 78, 0.035) 0deg 3deg, transparent 3deg 15deg);
+  animation: spin 60s linear infinite;
+  transform-origin: 50% 30%;
+}
+
+.escape-mote {
+  position: absolute;
+  bottom: -10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--candle);
+  box-shadow: 0 0 10px 3px rgba(255, 220, 130, 0.7);
+  animation-name: rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes rise {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(-105vh) translateX(30px); opacity: 0; }
+}

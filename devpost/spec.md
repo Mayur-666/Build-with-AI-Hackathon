@@ -284,9 +284,9 @@ pocket-dungeon/ (repo root = this project folder)
 │   └── api/generate-room/
 │       └── route.ts            # POST handler: solution → Gemini → validate → fill → fallback
 ├── components/
-│   ├── StartScreen.tsx
-│   ├── LoadingScreen.tsx
-│   ├── IntroCard.tsx
+│   ├── StartScreen.tsx         # relic pedestals, dice roll
+│   ├── LoadingScreen.tsx       # portal + rotating lines
+│   ├── DisturbanceScreen.tsx   # failed generation: reason + Retry / classic room / change relics
 │   ├── room/
 │   │   ├── RoomScene.tsx       # the fixed illustrated room (CSS + inline SVG)
 │   │   ├── Hotspot.tsx         # glow/pulse/inspected clickable wrapper
@@ -294,7 +294,10 @@ pocket-dungeon/ (repo root = this project folder)
 │   │   ├── Inventory.tsx
 │   │   ├── ClueJournal.tsx
 │   │   ├── HintButton.tsx
-│   │   └── CodeMachine.tsx
+│   │   ├── CodeMachine.tsx     # keyboard spinbutton dials
+│   │   ├── HintButton.tsx
+│   │   ├── LeaveRoom.tsx       # in-world confirmation
+│   │   ├── Hotspot.tsx, SceneArt.tsx, useItemDrag.ts
 │   └── EscapeScreen.tsx
 ├── lib/
 │   ├── game/                   # pure logic — no React, no AI; unit-tested

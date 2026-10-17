@@ -52,7 +52,7 @@ export type Room = RoomText & { solution: Solution; roomCode: string };
 
 export type JournalEntry = { id: "clue" | "order"; text: string };
 export type Item = { id: "key"; name: string; emoji: string };
-export type Message = { title: string; lines: string[]; tone?: "normal" | "wrong" | "discovery" | "intro" | "hint" };
+export type Message = { title: string; lines: string[]; tone?: "normal" | "wrong" | "discovery" | "intro" | "hint" | "locked" | "success" };
 
 export type GameState = {
   room: Room;
@@ -66,6 +66,7 @@ export type GameState = {
   hintStep: HintStep;
   hintLevel: 0 | 1 | 2 | 3;
   wrongAttempts: number;
+  hintsUsed: number;
   machineOpen: boolean;
   message: Message | null;
   escaped: boolean;

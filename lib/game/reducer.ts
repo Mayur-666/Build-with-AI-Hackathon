@@ -13,6 +13,7 @@ export function initialGameState(room: Room): GameState {
     hintStep: "findKey",
     hintLevel: 0,
     wrongAttempts: 0,
+    hintsUsed: 0,
     machineOpen: false,
     message: { title: room.title, lines: [room.intro], tone: "intro" },
     escaped: false,
@@ -64,8 +65,10 @@ function inspect(state: GameState, target: HotspotId): GameState {
   }
 
   if (target === "box") {
-    const lines = state.boxOpen ? [room.box.openText, room.box.orderClue] : [room.box.lockedText];
-    return { ...state, inspected, message: { title: "The box", lines } };
+    const message: Message = state.boxOpen
+      ? { title: "The box", lines: [room.box.openText, room.box.orderClue] }
+      : { title: "The box", lines: [room.box.lockedText], tone: "locked" };
+    return { ...state, inspected, message };
   }
 
   if (target === "machine") {
@@ -78,7 +81,7 @@ function inspect(state: GameState, target: HotspotId): GameState {
   }
 
   // exit
-  return { ...state, inspected, message: { title: "The door", lines: [room.exit.lockedText] } };
+  return { ...state, inspected, message: { title: "The door", lines: [room.exit.lockedText], tone: "locked" } };
 }
 
 function applyItem(state: GameState, target: HotspotId): GameState {
@@ -131,7 +134,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case "ENTER_CODE": {
       if (action.code === room.solution.code) {
-        return { ...state, escaped: true, machineOpen: false, message: null };
+        return {
+          ...state,
+          escaped: true,
+          machineOpen: false,
+          message: { title: "The strange machine", lines: [room.escapeText], tone: "success" },
+        };
       }
       const lines = room.machine.wrongCodeLines;
       return {
@@ -151,6 +159,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         hintStep: step,
         hintLevel: level,
+        hintsUsed: state.hintsUsed + 1,
         message: { title: `A hint (${level} of 3)`, lines: [room.hints[step][level - 1]], tone: "hint" },
       };
     }
