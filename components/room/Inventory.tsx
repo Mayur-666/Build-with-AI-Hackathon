@@ -14,7 +14,7 @@ const SLOTS = 3;
 export function Inventory({ items, selected, onSelect }: Props) {
   return (
     <section aria-label="Satchel" className="satchel flex items-center gap-2 rounded-2xl px-3 py-2">
-      <span className="font-storybook mr-1 hidden text-sm text-candle/80 sm:inline">Satchel</span>
+      <span className="font-storybook mr-1 text-sm text-candle/80 [writing-mode:vertical-rl] rotate-180">Satchel</span>
       {Array.from({ length: SLOTS }, (_, i) => {
         const item = items[i];
         if (!item) return <span key={i} className="slot h-12 w-12 rounded-full" aria-hidden />;

@@ -371,3 +371,40 @@ h3,
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ───────────── Room layout ─────────────
+   Narrow / portrait: title, scene, then the HUD stacked.
+   Landscape: scene on the left at full height, sidebar on the right. */
+
+.room-layout {
+  display: grid;
+  grid-template-areas: "head" "stage" "side";
+  gap: 12px;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 12px;
+}
+
+.room-head { grid-area: head; }
+.room-stage { grid-area: stage; position: relative; }
+.room-side { grid-area: side; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+
+@media (min-width: 760px) and (min-aspect-ratio: 5 / 4) {
+  .room-layout {
+    --side-w: clamp(260px, 26vw, 340px);
+    --stage-w: min(calc(100vw - var(--side-w) - 48px), calc((100svh - 32px) * 1.6), 96rem);
+    grid-template-columns: var(--stage-w) var(--side-w);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "stage head" "stage side";
+    height: calc(var(--stage-w) / 1.6);
+    max-width: none;
+    width: auto;
+    padding: 0;
+    margin: max(16px, calc((100svh - var(--stage-w) / 1.6) / 2)) auto;
+    justify-content: center;
+    align-content: stretch;
+  }
+  .room-head { text-align: left; }
+  .room-side .message-scroll { flex: 1; min-height: 0; overflow-y: auto; }
+}

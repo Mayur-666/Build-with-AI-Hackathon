@@ -86,16 +86,13 @@ export default function GameShell() {
   const machineFeedback = game.machineOpen && game.message?.tone === "wrong" ? game.message.lines[0] : null;
 
   return (
-    <main
-      className="mx-auto flex min-h-screen flex-col gap-3 px-3 py-4 sm:px-6"
-      style={{ width: "min(100%, calc((100svh - 240px) * 1.6 + 48px), 72rem)", minWidth: "min(100%, 22rem)" }}
-    >
-      <header className="text-center">
-        <h1 className="text-3xl text-gold drop-shadow-[0_0_12px_rgba(242,193,78,0.35)] sm:text-4xl">{game.room.title}</h1>
-        <p className="font-storybook text-base italic text-ink/70 sm:text-lg">{game.room.theme}</p>
+    <main className="room-layout">
+      <header className="room-head text-center">
+        <h1 className="text-2xl leading-tight text-gold drop-shadow-[0_0_12px_rgba(242,193,78,0.35)] lg:text-3xl">{game.room.title}</h1>
+        <p className="font-storybook mt-1 text-sm italic leading-snug text-ink/70 lg:text-base">{game.room.theme}</p>
       </header>
 
-      <div className="relative">
+      <div className="room-stage">
         <RoomScene state={game} onHotspot={onHotspot} />
         {heldItem && (
           <p className="pointer-events-none absolute left-1/2 top-3 z-30 -translate-x-1/2 rounded-full bg-[rgba(20,26,58,0.85)] px-4 py-1 text-sm text-candle shadow-lg">
@@ -112,8 +109,8 @@ export default function GameShell() {
         )}
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-        <div className="order-1 flex-1 sm:order-2">
+      <aside className="room-side">
+        <div className="message-scroll">
           <InspectPanel
             message={message}
             keyOffered={game.keyOffered}
@@ -122,20 +119,15 @@ export default function GameShell() {
             onCollect={() => dispatch({ type: "COLLECT_KEY" })}
           />
         </div>
-        <div className="order-2 flex items-center justify-between gap-3 sm:order-1">
+        <div className="flex items-center justify-between gap-3">
           <Inventory
             items={game.inventory}
             selected={game.selectedItem}
             onSelect={(item) => dispatch({ type: "SELECT_ITEM", item })}
           />
-          <div className="sm:hidden">
-            <ClueJournal entries={game.journal} />
-          </div>
-        </div>
-        <div className="order-3 hidden items-center sm:flex">
           <ClueJournal entries={game.journal} />
         </div>
-      </div>
+      </aside>
     </main>
   );
 }
