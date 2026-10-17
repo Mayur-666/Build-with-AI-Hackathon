@@ -788,3 +788,86 @@ h3,
   15% { opacity: 1; }
   100% { transform: translateY(-105vh) translateX(30px); opacity: 0; }
 }
+
+/* ───────────── Engine states: unlocked door, powered things, per-room backdrops ───────────── */
+
+.door.unlocked .door-leaf {
+  filter: drop-shadow(0 0 1.2cqw rgba(242, 193, 78, 0.9));
+}
+
+.door.unlocked::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 0;
+  height: 2%;
+  background: linear-gradient(90deg, transparent, rgba(255, 232, 160, 0.95), transparent);
+  filter: blur(2px);
+  animation: twinkle 1.6s ease-in-out infinite;
+}
+
+.hotspot.is-unlocked .tag.hover-only,
+.hotspot.is-open .tag.hover-only {
+  opacity: 1;
+  transform: none;
+}
+
+.hotspot.is-active .art,
+.hotspot.is-lit .art {
+  filter: drop-shadow(0 0 1.4cqw rgba(255, 220, 120, 0.85)) drop-shadow(0 0.6cqw 0.6cqw rgba(0, 0, 0, 0.5));
+}
+
+.hotspot.is-lit .curio-glow,
+.hotspot.is-active .curio-glow {
+  background: radial-gradient(circle, rgba(255, 220, 120, 0.7), transparent 65%);
+}
+
+.hotspot.is-open .curio-glow {
+  background: radial-gradient(circle, rgba(180, 255, 200, 0.45), transparent 65%);
+}
+
+.floor-shadow {
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.55), transparent 70%);
+}
+
+/* Library: shelves of books along the back wall */
+.backdrop-library .wall {
+  background:
+    repeating-linear-gradient(90deg, rgba(90, 50, 30, 0.55) 0 0.3cqw, transparent 0.3cqw 1.6cqw, rgba(120, 40, 60, 0.35) 1.6cqw 2.4cqw, transparent 2.4cqw 3.4cqw, rgba(40, 70, 110, 0.35) 3.4cqw 4.3cqw, transparent 4.3cqw 5.4cqw) 0 6cqw / 100% 9cqw,
+    repeating-linear-gradient(180deg, transparent 0 8.4cqw, #3a2416 8.4cqw 9cqw),
+    linear-gradient(180deg, #1d1838 0%, #2b2148 55%, #33264f 66%);
+}
+
+/* Workshop: brass gear wallpaper and a warmer floor */
+.backdrop-workshop .wall {
+  background:
+    radial-gradient(circle at 3cqw 3cqw, transparent 1.2cqw, rgba(199, 154, 66, 0.12) 1.25cqw, rgba(199, 154, 66, 0.12) 1.6cqw, transparent 1.65cqw) 0 0 / 6cqw 6cqw,
+    linear-gradient(180deg, #221a2e 0%, #2f2338 55%, #3a2a3c 66%);
+}
+.backdrop-workshop .floor {
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.25) 0 0.15cqw, transparent 0.15cqw 7cqw),
+    linear-gradient(180deg, #3d2a1a 0%, #2a1c10 100%);
+}
+
+/* Greenhouse: moonlit glass panes and a mossy floor */
+.backdrop-greenhouse .wall {
+  background:
+    repeating-linear-gradient(90deg, rgba(160, 220, 200, 0.18) 0 0.25cqw, transparent 0.25cqw 10cqw),
+    repeating-linear-gradient(180deg, rgba(160, 220, 200, 0.14) 0 0.25cqw, transparent 0.25cqw 12cqw),
+    linear-gradient(180deg, #12263a 0%, #1b3442 55%, #22403f 66%);
+}
+.backdrop-greenhouse .wainscot {
+  background: linear-gradient(180deg, #2f4a3a, #22382c);
+  border-top-color: #4f7a5f;
+}
+.backdrop-greenhouse .floor {
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(90, 140, 80, 0.35), transparent 50%),
+    linear-gradient(180deg, #24301e 0%, #161e12 100%);
+}
+.backdrop-greenhouse .rug {
+  opacity: 0.35;
+}

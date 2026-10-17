@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { JournalEntry } from "@/lib/game/types";
+export type JournalEntry = { id: string; text: string };
 
 /** A little book button; opens to a parchment page of clues found so far. */
 export function ClueJournal({ entries }: { entries: JournalEntry[] }) {

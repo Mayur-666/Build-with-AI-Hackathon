@@ -88,9 +88,9 @@ export function SideTable() {
   );
 }
 
-export function Door({ open = false }: { open?: boolean }) {
+export function Door({ open = false, unlocked = false }: { open?: boolean; unlocked?: boolean }) {
   return (
-    <div className={`door ${open ? "open" : ""}`}>
+    <div className={`door ${open ? "open" : ""} ${unlocked ? "unlocked" : ""}`}>
       <svg viewBox="0 0 100 170" className="absolute inset-0 h-full w-full" aria-hidden>
         <defs>
           <radialGradient id="beyond" cx="0.5" cy="0.65">

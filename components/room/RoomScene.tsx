@@ -1,20 +1,22 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import type { GameState, HotspotId, ObjectId } from "@/lib/game/types";
+import { lookOf } from "@/lib/engine/engine";
+import type { AdventureDef, HotspotDef, Progress } from "@/lib/engine/types";
 import { Hotspot } from "./Hotspot";
 import { ArchedWindow, Door, HangingLamp, Machine, Pedestal, Shelf, SideTable, VelvetBox } from "./SceneArt";
 
 type Props = {
-  state: GameState;
-  onHotspot: (id: HotspotId) => void;
+  def: AdventureDef;
+  progress: Progress;
+  onHotspot: (id: string) => void;
   /** The hotspot an item is being dragged over, or undefined when nothing is being dragged. */
-  dragOver?: HotspotId | null;
-  /** The hotspot that just rejected an item or is locked (wiggles briefly). */
-  nope?: HotspotId | null;
-  /** The hotspot just inspected (reacts briefly). */
-  poked?: HotspotId | null;
-  /** The code was right: the machine celebrates and the door swings open. */
+  dragOver?: string | null;
+  /** The hotspot that just refused (wrong item, locked): it wiggles. */
+  nope?: string | null;
+  /** The hotspot just inspected: it reacts. */
+  poked?: string | null;
+  /** The escape is under way: the door swings open and light floods in. */
   escaping?: boolean;
 };
 
@@ -24,13 +26,6 @@ const pct = (left: number, top: number, width: number, height: number): CSSPrope
   width: `${width}%`,
   height: `${height}%`,
 });
-
-/** Where each curio sits: on the wall shelf, on the pedestal, on the side table. */
-const CURIO_SPOTS: Record<ObjectId, CSSProperties> = {
-  a: pct(6.5, 35, 13, 17),
-  b: pct(22.5, 40, 13, 17),
-  c: pct(62.5, 42, 13, 17),
-};
 
 const FIREFLIES = [
   [14, 30, 0],
@@ -42,92 +37,88 @@ const FIREFLIES = [
   [60, 70, 9],
 ];
 
-/** The one fixed storybook room. Every clickable thing is a <Hotspot>. */
-export function RoomScene({ state, onHotspot, dragOver, nope, poked, escaping = false }: Props) {
-  const { room } = state;
-  const using = state.selectedItem !== null;
-  const unvisited = (id: HotspotId) => !state.inspected.includes(id);
-  const common = (id: HotspotId) => ({
-    id,
-    unvisited: unvisited(id),
-    using,
-    drop: dragOver === undefined ? null : dragOver === id ? ("over" as const) : ("ready" as const),
-    nope: nope === id,
-    poked: poked === id,
-    disabled: escaping,
-    onClick: () => onHotspot(id),
-  });
-  const verb = (what: string) => (using ? `Use the ${state.inventory[0]?.name ?? "item"} on the ${what}` : `Inspect the ${what}`);
+/** Furniture under a curio, placed relative to its hotspot. */
+function Plinth({ h }: { h: HotspotDef }) {
+  const [x, y, w, hh] = h.spot;
+  const bottom = y + hh;
+  if (h.plinth === "shelf")
+    return (
+      <div className="scene-layer" style={pct(x - 2.5, bottom - 0.5, w + 5, 5)}>
+        <Shelf />
+      </div>
+    );
+  if (h.plinth === "pedestal")
+    return (
+      <div className="scene-layer" style={pct(x + 1.5, bottom - 1, w - 3, 22)}>
+        <Pedestal />
+      </div>
+    );
+  if (h.plinth === "table")
+    return (
+      <div className="scene-layer" style={pct(x + 1.5, bottom - 1, w - 3, 20)}>
+        <SideTable />
+      </div>
+    );
+  if (h.plinth === "floor") return <div className="scene-layer floor-shadow" style={pct(x + w * 0.1, bottom - 2.5, w * 0.8, 5)} />;
+  return null;
+}
+
+/** Any room: backdrop by theme, every hotspot from the definition. */
+export function RoomScene({ def, progress, onHotspot, dragOver, nope, poked, escaping = false }: Props) {
+  const using = progress.selectedItem !== null;
+  const held = progress.selectedItem ? def.items[progress.selectedItem]?.name : null;
+  const verb = (name: string) => (held ? `Use the ${held} on the ${name}` : `Inspect the ${name}`);
 
   return (
-    <div className={`scene ${escaping ? "escaping" : ""}`}>
-      {/* back to front */}
+    <div className={`scene backdrop-${def.backdrop} ${escaping ? "escaping" : ""}`}>
       <div className="scene-layer wall" />
       <div className="scene-layer wainscot" style={{ top: "52%", bottom: "34%" }} />
       <div className="scene-layer floor" />
+      <div className="scene-layer backdrop-decor" />
       <div className="scene-layer rug" />
-
       <div className="scene-layer" style={pct(5.5, 7, 15, 40)}>
         <ArchedWindow />
       </div>
       <div className="scene-layer" style={pct(30.5, 0, 6, 32)}>
         <HangingLamp />
       </div>
-      <div className="scene-layer" style={pct(4, 51.5, 18, 5)}>
-        <Shelf />
-      </div>
-      <div className="scene-layer" style={pct(24, 56, 10, 22)}>
-        <Pedestal />
-      </div>
-      <div className="scene-layer" style={pct(64, 58, 10, 20)}>
-        <SideTable />
-      </div>
 
-      <Hotspot
-        label={verb("door")}
-        tag="The door"
-        tagMode="hover"
-        style={pct(41.5, 12.5, 17, 54)}
-        {...common("exit")}
-      >
-        <Door open={escaping} />
-      </Hotspot>
+      {def.hotspots.map((h) => (
+        <Plinth key={`plinth-${h.id}`} h={h} />
+      ))}
 
-      {(["a", "b", "c"] as const).map((id) => {
-        const obj = room.objects[id];
+      {def.hotspots.map((h) => {
+        const look = lookOf(h, progress);
+        const state = look?.state ?? null;
         return (
           <Hotspot
-            key={id}
-            label={verb(obj.name)}
-            tag={obj.name}
-            style={CURIO_SPOTS[id]}
-            {...common(id)}
+            key={h.id}
+            id={h.id}
+            label={verb(h.name)}
+            tag={h.name}
+            tagMode={h.tag ?? (h.art === "emoji" ? "always" : "hover")}
+            style={pct(...h.spot)}
+            unvisited={!progress.inspected.includes(h.id)}
+            using={using}
+            state={state}
+            drop={dragOver === undefined ? null : dragOver === h.id ? "over" : "ready"}
+            nope={nope === h.id}
+            poked={poked === h.id}
+            disabled={escaping}
+            onClick={() => onHotspot(h.id)}
           >
-            <span className="curio-glow" />
-            <span className="curio-emoji absolute bottom-0 left-1/2 -translate-x-1/2">{obj.emoji}</span>
+            {h.art === "door" && <Door open={escaping} unlocked={state === "unlocked"} />}
+            {h.art === "box" && <VelvetBox open={state === "open"} />}
+            {h.art === "machine" && <Machine solved={state === "active" || escaping} />}
+            {h.art === "emoji" && (
+              <>
+                <span className="curio-glow" />
+                <span className="curio-emoji absolute bottom-0 left-1/2 -translate-x-1/2">{look?.emoji ?? h.emoji}</span>
+              </>
+            )}
           </Hotspot>
         );
       })}
-
-      <Hotspot
-        label={verb("strange machine")}
-        tag="Strange machine"
-        tagMode="hover"
-        style={pct(77, 22, 19, 60)}
-        {...common("machine")}
-      >
-        <Machine solved={escaping} />
-      </Hotspot>
-
-      <Hotspot
-        label={verb(state.boxOpen ? "open box" : "locked box")}
-        tag={state.boxOpen ? "Open box" : "Locked box"}
-        tagMode="hover"
-        style={pct(40, 71, 14, 16)}
-        {...common("box")}
-      >
-        <VelvetBox open={state.boxOpen} />
-      </Hotspot>
 
       <div className="scene-layer lamplight" />
       {FIREFLIES.map(([x, y, delay], i) => (

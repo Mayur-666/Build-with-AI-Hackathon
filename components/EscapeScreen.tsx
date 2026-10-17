@@ -2,15 +2,19 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { Room } from "@/lib/game/types";
 
 export type EscapeStats = { seconds: number; wrongAttempts: number; hintsUsed: number; cluesFound: number };
 
+export type EscapeAction = { label: string; onClick: () => void; primary?: boolean };
+
 type Props = {
-  room: Room;
+  title: string;
+  escapeText: string;
+  roomId: string;
+  saveId: string;
   stats: EscapeStats;
-  onNewRoom: () => void;
-  onSameObjects: () => void;
+  totalClues: number;
+  actions: EscapeAction[];
 };
 
 function formatTime(total: number): string {
@@ -20,11 +24,11 @@ function formatTime(total: number): string {
 }
 
 /** Out through the door, under the open sky. */
-export function EscapeScreen({ room, stats, onNewRoom, onSameObjects }: Props) {
+export function EscapeScreen({ title, escapeText, roomId, saveId, stats, totalClues, actions }: Props) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(room.roomCode);
+      await navigator.clipboard.writeText(saveId);
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
@@ -34,9 +38,9 @@ export function EscapeScreen({ room, stats, onNewRoom, onSameObjects }: Props) {
 
   const STATS = [
     { label: "Time in the room", value: formatTime(stats.seconds), icon: "⌛" },
-    { label: "Wrong codes", value: String(stats.wrongAttempts), icon: "⚙️" },
+    { label: "Wrong attempts", value: String(stats.wrongAttempts), icon: "⚙️" },
     { label: "Owl hints", value: String(stats.hintsUsed), icon: "🦉" },
-    { label: "Clues found", value: `${stats.cluesFound} of 2`, icon: "📖" },
+    { label: "Clues found", value: `${stats.cluesFound} of ${totalClues}`, icon: "📖" },
   ];
 
   return (
@@ -72,9 +76,9 @@ export function EscapeScreen({ room, stats, onNewRoom, onSameObjects }: Props) {
       </div>
 
       <div className="relative flex max-w-xl flex-col items-center gap-3">
-        <p className="font-storybook text-lg italic text-candle/80">{room.title}</p>
+        <p className="font-storybook text-lg italic text-candle/80">{title}</p>
         <h1 className="text-5xl text-gold drop-shadow-[0_0_24px_rgba(242,193,78,0.5)] sm:text-6xl">You escaped!</h1>
-        <p className="text-lg leading-relaxed text-ink/90">{room.escapeText}</p>
+        <p className="text-lg leading-relaxed text-ink/90">{escapeText}</p>
       </div>
 
       <ul className="relative grid w-full max-w-xl grid-cols-2 gap-3 sm:grid-cols-4">
@@ -91,26 +95,29 @@ export function EscapeScreen({ room, stats, onNewRoom, onSameObjects }: Props) {
 
       <div className="brass relative flex items-center gap-4 rounded-2xl px-5 py-3">
         <div className="text-left">
-          <p className="font-storybook text-sm">Room code · saved in this browser</p>
-          <p className="font-mono text-2xl font-bold tracking-[0.2em]">{room.roomCode}</p>
+          <p className="font-storybook text-sm">Save code · this browser</p>
+          <p className="font-mono text-2xl font-bold tracking-[0.15em]">{saveId}</p>
+          <p className="text-xs opacity-75">Room: {roomId}</p>
         </div>
         <button onClick={copy} className="rounded-full bg-sepia px-3 py-1.5 text-sm font-bold text-candle hover:bg-[#5a3e24]">
           {copied ? "Copied ✓" : "Copy"}
         </button>
       </div>
-
       <p className="relative -mt-2 max-w-md text-xs text-ink/60">
-        Enter this code at the moonlit gate to revisit this room&apos;s ending in this browser. It isn&apos;t shared online, so it
+        Enter the save code at the moonlit gate to revisit this ending in this browser. Saves aren&apos;t uploaded, so the code
         won&apos;t open on another device.
       </p>
 
-      <div className="relative flex flex-col items-center gap-3 sm:flex-row">
-        <button onClick={onSameObjects} className="brass rounded-full px-6 py-3 font-extrabold transition hover:scale-105">
-          ↻ Same relics, new room
-        </button>
-        <button onClick={onNewRoom} className="satchel rounded-full px-6 py-3 font-extrabold text-candle transition hover:scale-105">
-          🎲 Choose new relics
-        </button>
+      <div className="relative flex flex-col flex-wrap items-center justify-center gap-3 sm:flex-row">
+        {actions.map((a) => (
+          <button
+            key={a.label}
+            onClick={a.onClick}
+            className={`rounded-full px-6 py-3 font-extrabold transition hover:scale-105 ${a.primary ? "brass" : "satchel text-candle"}`}
+          >
+            {a.label}
+          </button>
+        ))}
       </div>
       <Link href="/" className="font-storybook relative text-candle/75 underline-offset-4 hover:text-candle hover:underline">
         Back to the moonlit gate

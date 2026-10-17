@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import type { HotspotId, Item } from "@/lib/game/types";
+import type { Item } from "./Inventory";
+
+type HotspotId = string;
 
 export type DragState = { item: Item; x: number; y: number; over: HotspotId | null };
 
@@ -10,7 +12,7 @@ const DRAG_THRESHOLD = 6; // px of movement before a press becomes a drag (so a 
 /** The hotspot under a screen point, found via the `data-hotspot` attribute. */
 function hotspotAt(x: number, y: number): HotspotId | null {
   const el = document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-hotspot]");
-  return (el?.dataset.hotspot as HotspotId | undefined) ?? null;
+  return el?.dataset.hotspot ?? null;
 }
 
 /**

@@ -1,13 +1,13 @@
 "use client";
 
-import type { Message } from "@/lib/game/types";
+import type { Message } from "@/lib/engine/types";
+import type { Item } from "./Inventory";
 
 type Props = {
   message: Message | null;
-  keyOffered: boolean;
-  keyName: string;
-  keyEmoji: string;
-  onCollect: () => void;
+  /** Items on offer from what was just inspected; each gets a "Take" button. */
+  offered: Item[];
+  onTake: (itemId: string) => void;
 };
 
 const TONE_ICON: Partial<Record<NonNullable<Message["tone"]>, string>> = {
@@ -20,7 +20,7 @@ const TONE_ICON: Partial<Record<NonNullable<Message["tone"]>, string>> = {
 };
 
 /** The parchment narration beside the scene. */
-export function InspectPanel({ message, keyOffered, keyName, keyEmoji, onCollect }: Props) {
+export function InspectPanel({ message, offered, onTake }: Props) {
   // Re-mount on each new message so it animates in.
   const key = message ? `${message.title}|${message.lines.join("|")}` : "empty";
   return (
@@ -42,10 +42,18 @@ export function InspectPanel({ message, keyOffered, keyName, keyEmoji, onCollect
               {line}
             </p>
           ))}
-          {keyOffered && (
-            <button onClick={onCollect} className="brass mt-2 max-w-full rounded-full px-4 py-1 text-left text-sm font-bold whitespace-normal">
-              {keyEmoji} Take the {keyName}
-            </button>
+          {offered.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {offered.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => onTake(item.id)}
+                  className="brass max-w-full rounded-full px-4 py-1 text-left text-sm font-bold whitespace-normal"
+                >
+                  {item.emoji} Take the {item.name}
+                </button>
+              ))}
+            </div>
           )}
         </>
       ) : (

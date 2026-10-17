@@ -1,6 +1,6 @@
 "use client";
 
-import type { Item } from "@/lib/game/types";
+export type Item = { id: string; name: string; emoji: string };
 import type { useItemDrag } from "./useItemDrag";
 
 type Props = {
